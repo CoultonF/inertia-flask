@@ -60,13 +60,13 @@ def render_inertia(
         props = {
             key: value
             for key, value in props.items()
-            if key in refresh_props or isinstance(value, AlwaysProp)
+            if key in refresh_props # or isinstance(value, AlwaysProp)
         }
     else:
         props = {
             key: value
             for key, value in props.items()
-            if not callable(value) or not isinstance(value, LazyProp)
+            if not callable(value) # or not isinstance(value, LazyProp)
         }
 
     extension = current_app.extensions["inertia"]
