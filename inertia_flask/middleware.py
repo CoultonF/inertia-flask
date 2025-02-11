@@ -66,12 +66,14 @@ class InertiaMiddleware:
         import secrets
         return secrets.token_hex(32)
 
+
 def inertia_middleware(app):
     """
     Function to initialize the middleware
     """
     InertiaMiddleware(app)
     return app
+
 
 # Example usage of flash messages helper
 def add_message(category, message):

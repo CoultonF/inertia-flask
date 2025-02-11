@@ -17,17 +17,17 @@
     <meta charset="utf-8" />
     <meta name="viewport"
           content="width=device-width,initial-scale=1.0,maximum-scale=1.0" />
-    {% if env == 'development' %}
+    {% if config.DEBUG == true %}
       <!-- For setting up vite for hot reload with flask see this page -->
       <!-- https://vite.dev/guide/backend-integration.html#backend-integration -->
       <script type="module">
-      import RefreshRuntime from 'http://localhost:5173/dist/@react-refresh'
+      import RefreshRuntime from 'http://localhost:5173/@react-refresh'
       RefreshRuntime.injectIntoGlobalHook(window)
       window.$RefreshReg$ = () => {}
       window.$RefreshSig$ = () => (type) => type
       window.__vite_plugin_react_preamble_installed__ = true
       </script>
-      <link href="http://localhost:5173/src/main.css"  rel="stylesheet">
+      <!-- <link href="http://localhost:5173/src/main.css"  rel="stylesheet"> -->
       <script type="module" src="http://localhost:5173/@vite/client"></script>
       <script type="module" src="http://localhost:5173/src/main.tsx"></script>
     {% else %}
@@ -39,6 +39,6 @@
   {% endif %}
 </head>
 <body style="height: 100%;">
-  <div id="app" style="height: 100%;" data-page='{{ page | tojson }}'></div>
+  <div id="root" style="height: 100%;" data-page='{{ page }}'></div>
 </body>
 </html>

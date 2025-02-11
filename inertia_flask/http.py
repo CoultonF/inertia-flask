@@ -1,14 +1,15 @@
 from functools import wraps
 from http import HTTPStatus
 import json
-from flask import request, Response, render_template, session, url_for
+from flask import request, Response, render_template, session
 from .helpers import deep_transform_callables, validate_type
+from .version import get_asset_version
 from .settings import settings
 
 
 INERTIA_REQUEST_ENCRYPT_HISTORY = "_inertia_encrypt_history"
 INERTIA_SESSION_CLEAR_HISTORY = "_inertia_clear_history"
-INERTIA_TEMPLATE = "inertia.html"
+INERTIA_TEMPLATE = "base.html"
 
 
 class DeferredProp:
@@ -16,9 +17,11 @@ class DeferredProp:
         self.value = value
         self.group = group
 
+
 class IgnoreOnFirstLoadProp:
     def __init__(self, value):
         self.value = value
+
 
 class MergeableProp:
     def __init__(self, value, merge=True):
@@ -28,22 +31,23 @@ class MergeableProp:
     def should_merge(self):
         return self._merge
 
+
 class InertiaRequest:
     def __init__(self, flask_request):
         self.flask_request = flask_request
-        
+
     @property
     def headers(self):
         return self.flask_request.headers
 
     @property
     def inertia(self):
-        return getattr(self.flask_request, 'inertia', {})
+        return getattr(self.flask_request, "inertia", {})
 
     def is_a_partial_render(self, component):
         return (
-            "X-Inertia-Partial-Data" in self.headers and
-            self.headers.get("X-Inertia-Partial-Component", "") == component
+            "X-Inertia-Partial-Data" in self.headers
+            and self.headers.get("X-Inertia-Partial-Component", "") == component
         )
 
     def partial_keys(self):
@@ -67,7 +71,11 @@ class InertiaRequest:
         )
 
     def get_full_path(self):
-        return self.flask_request.full_path
+        full_path = self.flask_request.full_path
+        if full_path.endswith("?"):
+            full_path = full_path[:-1]
+        return full_path
+
 
 class BaseInertiaResponseMixin:
     def page_data(self):
@@ -77,7 +85,7 @@ class BaseInertiaResponseMixin:
             "component": self.component,
             "props": self.build_props(),
             "url": self.request.get_full_path(),
-            "version": settings.INERTIA_VERSION,
+            "version": get_asset_version(),
             "encryptHistory": self.request.should_encrypt_history(),
             "clearHistory": clear_history,
         }
@@ -138,8 +146,18 @@ class BaseInertiaResponseMixin:
             **self.template_data
         )
 
+
 class InertiaResponse(BaseInertiaResponseMixin, Response):
-    def __init__(self, request, component, props=None, template_data=None, headers=None, *args, **kwargs):
+    def __init__(
+        self,
+        request,
+        component,
+        props=None,
+        template_data=None,
+        headers=None,
+        *args,
+        **kwargs
+    ):
         self.request = InertiaRequest(request)
         self.component = component
         self.props = props or {}
@@ -148,7 +166,7 @@ class InertiaResponse(BaseInertiaResponseMixin, Response):
         _headers = headers or {}
 
         data = json.dumps(self.page_data(), cls=self.json_encoder)
-        
+
         if self.request.is_inertia():
             _headers = {
                 **_headers,
@@ -162,22 +180,27 @@ class InertiaResponse(BaseInertiaResponseMixin, Response):
 
         super().__init__(content, headers=_headers, *args, **kwargs)
 
+
 def inertia(component):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             props = f(*args, **kwargs)
-            
+
             # If something other than a dict is returned, return it directly
             if not isinstance(props, dict):
                 return props
-                
+
             return InertiaResponse(request, component, props)
+
         return decorated_function
+
     return decorator
+
 
 def render(request, component, props=None, template_data=None):
     return InertiaResponse(request, component, props or {}, template_data or {})
+
 
 def location(url):
     return Response(
@@ -186,8 +209,10 @@ def location(url):
         headers={"X-Inertia-Location": url},
     )
 
+
 def encrypt_history(value=True):
     setattr(request, INERTIA_REQUEST_ENCRYPT_HISTORY, value)
+
 
 def clear_history():
     session[INERTIA_SESSION_CLEAR_HISTORY] = True

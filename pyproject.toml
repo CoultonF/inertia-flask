@@ -1,17 +1,22 @@
-[project]
+[tool.poetry]
 name = "inertia-flask"
-version = "0.1.0"
-description = ""
-authors = [
-    {name = "CoultonFççç",email = "cjrfraser@gmail.com"}
-]
+version = "0.0.1"
+description = "Inertia Flask Demo"
+authors = ["Coulton Fraser <cjrfraser@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "flask (>=3.1.0,<4.0.0)"
-]
+packages = [{include = "inertia_flask"}]
 
+[tool.poetry.dependencies]
+python = "^3.9"
+flask = "^3.1.0"
+
+
+[tool.poetry.group.demo.dependencies]
+flask = "^3.1.0"
+
+[tool.poetry.scripts]
+run-demo = "demo.app:main"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
