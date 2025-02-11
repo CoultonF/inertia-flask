@@ -5,6 +5,7 @@ from flask import request, Response, render_template, session
 from .helpers import deep_transform_callables, validate_type
 from .version import get_asset_version
 from .settings import settings
+from .prop_classes import DeferredProp, IgnoreOnFirstLoadProp, MergeableProp
 
 
 INERTIA_REQUEST_ENCRYPT_HISTORY = "_inertia_encrypt_history"
@@ -12,24 +13,6 @@ INERTIA_SESSION_CLEAR_HISTORY = "_inertia_clear_history"
 INERTIA_TEMPLATE = "base.html"
 
 
-class DeferredProp:
-    def __init__(self, value, group="default"):
-        self.value = value
-        self.group = group
-
-
-class IgnoreOnFirstLoadProp:
-    def __init__(self, value):
-        self.value = value
-
-
-class MergeableProp:
-    def __init__(self, value, merge=True):
-        self.value = value
-        self._merge = merge
-
-    def should_merge(self):
-        return self._merge
 
 
 class InertiaRequest:
