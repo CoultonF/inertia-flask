@@ -6,15 +6,31 @@ import warnings
 # from django.forms.models import model_to_dict as base_model_to_dict
 
 from dataclasses import is_dataclass, asdict
-from json import JSONEncoder
+import json
 from .prop_classes import DeferredProp, MergeProp, OptionalProp
+from sqlalchemy.ext.declarative import DeclarativeMeta
 
 
-class InertiaJsonEncoder(JSONEncoder):
+class AlchemyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj.__class__, DeclarativeMeta):
+            # Convert SQLAlchemy model to dictionary
+            fields = {}
+            for field in [
+                x for x in dir(obj) if not x.startswith("_") and x != "metadata"
+            ]:
+                data = obj.__getattribute__(field)
+                try:
+                    json.dumps(data)
+                    fields[field] = data
+                except TypeError:
+                    fields[field] = None
+            return fields
+        return json.JSONEncoder.default(self, obj)
+
+
+class InertiaJsonEncoder(json.JSONEncoder):
     def default(self, value):
-        if is_dataclass(value):
-            return asdict(value)
-
         return super().default(value)
 
 

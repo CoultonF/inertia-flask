@@ -13,8 +13,6 @@ INERTIA_SESSION_CLEAR_HISTORY = "_inertia_clear_history"
 INERTIA_TEMPLATE = "base.html"
 
 
-
-
 class InertiaRequest:
     def __init__(self, flask_request):
         self.flask_request = flask_request
@@ -148,7 +146,7 @@ class InertiaResponse(BaseInertiaResponseMixin, Response):
         self.json_encoder = settings.INERTIA_JSON_ENCODER
         _headers = headers or {}
 
-        data = json.dumps(self.page_data(), cls=self.json_encoder)
+        data = json.dumps(self.page_data(), cls=self.json_encoder, default=str)
 
         if self.request.is_inertia():
             _headers = {
