@@ -61,7 +61,7 @@ def init_db():
 def hello_world():
     def get_posts():
         posts = db.session.execute(db.select(Posts)).scalars().all()
-        return [PostModel.model_validate(post) for post in posts]
+        return [PostModel.model_validate(post).model_dump() for post in posts]
 
     # post = Posts.query.first()
     return {"value": 1, "defer": defer(get_posts)}
