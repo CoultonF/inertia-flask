@@ -1,4 +1,4 @@
-from .http import inertia, InertiaResponse, location, render
+from .http import InertiaResponse, inertia, location, render
 from .middleware import inertia_middleware
 from .utils import defer, lazy, merge, optional
 

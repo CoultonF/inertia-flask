@@ -1,12 +1,13 @@
+import json
 from functools import wraps
 from http import HTTPStatus
-import json
-from flask import request, Response, render_template, session
-from .helpers import deep_transform_callables, validate_type
-from .version import get_asset_version
-from .settings import settings
-from .prop_classes import DeferredProp, IgnoreOnFirstLoadProp, MergeableProp
 
+from flask import Response, render_template, request, session
+
+from .helpers import deep_transform_callables, validate_type
+from .prop_classes import DeferredProp, IgnoreOnFirstLoadProp, MergeableProp
+from .settings import settings
+from .version import get_asset_version
 
 INERTIA_REQUEST_ENCRYPT_HISTORY = "_inertia_encrypt_history"
 INERTIA_SESSION_CLEAR_HISTORY = "_inertia_clear_history"
@@ -124,7 +125,7 @@ class BaseInertiaResponseMixin:
             INERTIA_TEMPLATE,
             inertia_layout=settings.INERTIA_LAYOUT,
             page=data,
-            **self.template_data
+            **self.template_data,
         )
 
 
@@ -137,7 +138,7 @@ class InertiaResponse(BaseInertiaResponseMixin, Response):
         template_data=None,
         headers=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         self.request = InertiaRequest(request)
         self.component = component

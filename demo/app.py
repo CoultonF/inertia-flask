@@ -1,18 +1,15 @@
-from flask import Flask, jsonify
-from dataclasses import dataclass
-from inertia_flask import inertia_middleware, inertia, defer
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from datetime import datetime
-from typing import Optional
-from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import select, inspect
+
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+from inertia_flask import defer, inertia, inertia_middleware
 
 
 class Base(DeclarativeBase):
     """subclasses will be converted to dataclasses"""
-
-    pass
 
 
 db = SQLAlchemy(model_class=Base)

@@ -1,7 +1,6 @@
-from functools import wraps
-from flask import request, session, redirect, make_response
+from flask import request, session
 from werkzeug.wrappers import Response
-from .settings import settings
+
 from .version import get_asset_version
 
 

@@ -1,14 +1,9 @@
+import json
 import warnings
 
-# from django.core.serializers.json import DjangoJSONEncoder
-# from django.db import models
-# from django.db.models.query import QuerySet
-# from django.forms.models import model_to_dict as base_model_to_dict
-
-from dataclasses import is_dataclass, asdict
-import json
-from .prop_classes import DeferredProp, MergeProp, OptionalProp
 from sqlalchemy.ext.declarative import DeclarativeMeta
+
+from .prop_classes import DeferredProp, MergeProp, OptionalProp
 
 
 class AlchemyEncoder(json.JSONEncoder):
