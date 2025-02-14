@@ -4,7 +4,8 @@ from demo.app import app, init_db
 
 
 @pytest.fixture
-def client():
+def setup():
+    """Create the setup for a test"""
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
     app.config["TESTING"] = True
 

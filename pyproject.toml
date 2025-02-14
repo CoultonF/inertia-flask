@@ -17,6 +17,10 @@ pydantic = "^2.10.6"
 ruff = "^0.9.6"
 pytest = "^8.3.4"
 
+[tool.pytest.ini_options]
+python_files = "test_*.py"
+addopts = "-v"
+
 [tool.poetry.scripts]
 run-demo = "demo.app:main"
 
