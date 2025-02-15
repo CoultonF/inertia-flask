@@ -2,7 +2,16 @@ import json
 from functools import wraps
 from http import HTTPStatus
 
-from flask import Response, render_template, request, session
+from flask import (
+    Response,
+    current_app,
+    has_app_context,
+    render_template,
+    render_template_string,
+    request,
+    session,
+)
+from markupsafe import Markup
 
 from .helpers import deep_transform_callables, validate_type
 from .prop_classes import DeferredProp, IgnoreOnFirstLoadProp, MergeableProp
@@ -11,7 +20,8 @@ from .version import get_asset_version
 
 INERTIA_REQUEST_ENCRYPT_HISTORY = "_inertia_encrypt_history"
 INERTIA_SESSION_CLEAR_HISTORY = "_inertia_clear_history"
-INERTIA_TEMPLATE = "base.html"
+INERTIA_TEMPLATE = "inertia.html"
+INERTIA_ROOT = "root"
 
 
 class InertiaRequest:
@@ -121,10 +131,20 @@ class BaseInertiaResponseMixin:
         ]
 
     def build_first_load(self, data):
+        inertia_div = Markup(
+            render_template_string(
+                f"""
+                <div
+                id="{current_app.config.get("INERTIA_ROOT", INERTIA_ROOT)}"
+                data-page="{{{{ page|escape }}}}"></div>
+                """,
+                page=data,
+            )
+        )
         return render_template(
-            INERTIA_TEMPLATE,
-            inertia_layout=settings.INERTIA_LAYOUT,
+            current_app.config.get("INERTIA_TEMPLATE", INERTIA_TEMPLATE),
             page=data,
+            inertia=inertia_div,
             **self.template_data,
         )
 
@@ -167,6 +187,11 @@ def inertia(component):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
+            # Check if the current app has the Inertia middleware initialized
+            if not has_app_context() or "inertia" not in current_app.extensions:
+                raise RuntimeError(
+                    "Inertia middleware is not initialized in the current app context."
+                )
             props = f(*args, **kwargs)
 
             # If something other than a dict is returned, return it directly

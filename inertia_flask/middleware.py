@@ -1,4 +1,8 @@
-from flask import request, session
+import secrets
+
+from flask import Blueprint, Flask, request, session
+from flask.app import App
+from flask.blueprints import BlueprintSetupState
 from werkzeug.wrappers import Response
 
 from .version import get_asset_version
@@ -10,8 +14,23 @@ class InertiaMiddleware:
         self.init_app(app)
 
     def init_app(self, app):
+        if isinstance(app, Flask):
+            self._init_extension(app)
+        elif isinstance(app, Blueprint):
+            blueprint = app
+            # Register the extension once the blueprint is registered
+            blueprint.record_once(self.register_blueprint)
         app.before_request(self.before_request)
         app.after_request(self.after_request)
+
+    def register_blueprint(self, state: BlueprintSetupState):
+        self._init_extension(state.app)
+
+    def _init_extension(self, app: App):
+        """Store a reference to the extension in the app's extensions."""
+        if not hasattr(app, "extensions"):
+            app.extensions = {}
+        app.extensions["inertia"] = self
 
     def before_request(self):
         # Generate CSRF token if it doesn't exist
@@ -63,7 +82,6 @@ class InertiaMiddleware:
     def generate_csrf_token(self):
         # Generate a random token - in a real app you might want to use
         # Flask-WTF or another CSRF library
-        import secrets
 
         return secrets.token_hex(32)
 

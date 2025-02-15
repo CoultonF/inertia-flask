@@ -9,12 +9,22 @@ packages = [{include = "inertia_flask"}]
 [tool.poetry.dependencies]
 python = "^3.9"
 flask = "^3.1.0"
+markupsafe = "^3.0.2"
+
+[tool.poetry.group.dev]
+optional = true
 
 [tool.poetry.group.dev.dependencies]
 flask = "^3.1.0"
 flask-sqlalchemy = "^3.1.1"
 pydantic = "^2.10.6"
 ruff = "^0.9.6"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+beautifulsoup4 = "^4.13.3"
 pytest = "^8.3.4"
 
 [tool.pytest.ini_options]
@@ -43,6 +53,8 @@ indent-style = "space"
 skip-magic-trailing-comma = false
 line-ending = "auto"
 
+[tool.pylint.'MESSAGES CONTROL']
+disable = ["missing-docstring"]
 
 [build-system]
 requires = ["poetry-core"]
