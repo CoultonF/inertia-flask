@@ -1,11 +1,12 @@
 from datetime import datetime
+from random import randint
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
-from inertia_flask import defer, inertia, inertia_middleware
+from inertia_flask import Inertia, defer, inertia
 
 
 class Base(DeclarativeBase):
@@ -13,12 +14,15 @@ class Base(DeclarativeBase):
 
 
 db = SQLAlchemy(model_class=Base)
+inertia_ext = Inertia()
 app = Flask(__name__)
 app.secret_key = "your-secret-key"  # Required for session
 app.config["INERTIA_TEMPLATE"] = "base.html"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///demo.db"
 db.init_app(app)
-inertia_middleware(app)
+inertia_ext.init_app(app)
+
+inertia_ext.add_shorthand_route("/test", "test")
 
 
 class PostModel(BaseModel):
@@ -61,7 +65,11 @@ def hello_world():
         return [PostModel.model_validate(post).model_dump() for post in posts]
 
     # post = Posts.query.first()
-    return {"value": 1, "defer": defer(get_posts)}
+    return {
+        "value": 1,
+        "defer": defer(get_posts, group="test"),
+        "other": defer(lambda: [f"{randint(1, 9)}"], group="test", merge=True),
+    }
 
 
 def main():

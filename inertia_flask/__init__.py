@@ -1,6 +1,7 @@
 from .http import InertiaResponse, inertia, location, render
-from .middleware import inertia_middleware
+from .middleware import Inertia
 from .utils import defer, lazy, merge, optional
+from .version import get_asset_version as _get_asset_version
 
 __all__ = [
     "inertia",
@@ -11,6 +12,7 @@ __all__ = [
     "lazy",
     "merge",
     "optional",
-    "inertia_middleware",
+    "Inertia",
+    "_get_asset_version",
 ]
 __version__ = "0.0.1"

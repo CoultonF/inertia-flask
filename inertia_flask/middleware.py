@@ -1,19 +1,23 @@
 import secrets
+from typing import Optional
 
 from flask import Blueprint, Flask, request, session
 from flask.app import App
 from flask.blueprints import BlueprintSetupState
 from werkzeug.wrappers import Response
 
+from .http import render
 from .version import get_asset_version
 
 
-class InertiaMiddleware:
-    def __init__(self, app):
-        self.app = app
-        self.init_app(app)
+class Inertia:
+    def __init__(self, app: Optional[Flask] = None):
+        self.app = None
+        if app is not None:
+            self.init_app(app)
 
     def init_app(self, app):
+        self.app = app
         if isinstance(app, Flask):
             self._init_extension(app)
         elif isinstance(app, Blueprint):
@@ -85,13 +89,27 @@ class InertiaMiddleware:
 
         return secrets.token_hex(32)
 
+    def add_shorthand_route(
+        self, url: str, component_name: str, endpoint: Optional[str] = None
+    ) -> None:
+        """Connect a URL rule to a frontend component that does not need a controller.
 
-def inertia_middleware(app):
-    """
-    Function to initialize the middleware
-    """
-    InertiaMiddleware(app)
-    return app
+        This url does not have dedicated python source code but is linked to a JS component,
+        (i.e. a frontend component which does not need props nor view_data).
+
+        :param url: The URL rule as string as used in ``flask.add_url_rule``
+        :param component_name: Your frontend component name
+        :param endpoint: The endpoint for the registered URL rule. (by default
+        ``component_name`` in lower case)
+        """
+        if not self.app:
+            raise RuntimeError("Extension has not been initialized correctly.")
+
+        self.app.add_url_rule(
+            url,
+            endpoint or component_name.lower(),
+            lambda: render(request, component_name),
+        )
 
 
 # Example usage of flash messages helper
