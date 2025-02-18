@@ -1,3 +1,5 @@
+from time import sleep
+
 from flask import Flask
 
 from inertia_flask import Inertia, defer, inertia
@@ -13,17 +15,21 @@ def create_app():
 
     # Register routes
 
-    inertia_ext.add_shorthand_route("/short", "short")
+    inertia_ext.add_shorthand_route("/shorthand", "component")
 
     @app.route("/")
     @inertia("component")
     def root():
-        return {"name": "John Doe"}
+        return {"name": "Alice"}
 
     @app.route("/defer")
-    @inertia("deferred")
-    def deferred():
-        return {"name": "Jane Doe", "deferred": defer(lambda: "deferred result")}
+    @inertia("component")
+    def defer_page():
+        def get_email():
+            sleep(0.1)
+            return "alice@wonderland.com"
+
+        return {"name": "Alice", "email": defer(get_email)}
 
     @app.route("/defer-group")
     @inertia("defer-group")
