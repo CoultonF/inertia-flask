@@ -1,5 +1,6 @@
 # Python
 __pycache__/
+**/__pycache__/*
 *.py[cod]
 *.so
 *.egg-info/
@@ -44,7 +45,8 @@ package-lock.json
 pnpm-lock.yaml
 
 # Database
-instance/
+instance/*
+*.db
 
 # Logs
 logs/
