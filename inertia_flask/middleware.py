@@ -10,7 +10,7 @@ from .version import get_asset_version
 
 
 class Inertia:
-    def __init__(self, app: Optional[Flask] = None):
+    def __init__(self, app: Optional[Flask | Blueprint] = None):
         self.app = None
         if app is not None:
             self.init_app(app)
