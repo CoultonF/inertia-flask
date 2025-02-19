@@ -113,7 +113,11 @@ To contribute to the development of this extension, follow these steps:
 
 ## Thank you
 
-Parts of this repo were inspired by [inertia-django](https://github.com/inertiajs/inertia-django?tab=readme-ov-file) and [flask-inertia](https://github.com/j0ack/flask-inertia)
+Parts of this repo were inspired by: 
+
+[Inertia-django](https://github.com/inertiajs/inertia-django?tab=readme-ov-file), MIT License, Copyright 2022 Bellawatt, Brandon Shar
+
+[Flask-inertia](https://github.com/j0ack/flask-inertia), MIT License, Copyright 2021, TROUVERIE Joachim <jtrouverie@joakode.fr>
 
 Maintained and sponsored by [IJACK Technologies](https://myijack.com/).
 
