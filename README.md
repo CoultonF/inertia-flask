@@ -1,5 +1,9 @@
 [![Inertia.js](https://raw.githubusercontent.com/coultonf/inertia-flask/main/LOGO.png)](https://inertiajs.com/)
 
+[![Inertia 2.0](https://img.shields.io/badge/Inertia-2.0-rgb(107%2C70%2C193).svg)](https://inertiajs.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+
 # Inertia.js Flask Adapter
 
 The Inertia.js Flask Adapter allows you to seamlessly integrate Inertia.js with your Flask applications. This adapter provides the necessary tools to build modern, single-page applications using Flask as the backend and Inertia.js for the frontend.
