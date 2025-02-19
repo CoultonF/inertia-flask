@@ -116,4 +116,5 @@ To contribute to the development of this extension, follow these steps:
 Parts of this repo were inspired by [inertia-django](https://github.com/inertiajs/inertia-django?tab=readme-ov-file) and [flask-inertia](https://github.com/j0ack/flask-inertia)
 
 Maintained and sponsored by [IJACK Technologies](https://myijack.com/).
+
 [![IJACK Technologies](https://raw.githubusercontent.com/coultonf/inertia-flask/main/IJACK.png)](https://myijack.com/)
