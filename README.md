@@ -69,7 +69,7 @@ axios.defaults.xsrfCookieName = "_csrf_token";
 ```
 This ensures that Axios automatically includes the CSRF token in requests, aligning with Seasurf's protection mechanism.
 
-## Example Project
+## Examples
 
 To run the example project, follow these steps:
 
@@ -109,3 +109,11 @@ To contribute to the development of this extension, follow these steps:
     ``` bash
     poetry run pytest
     ```
+
+
+## Thank you
+
+Parts of this repo were inspired by [inertia-django](https://github.com/inertiajs/inertia-django?tab=readme-ov-file) and [flask-inertia](https://github.com/j0ack/flask-inertia)
+
+Maintained and sponsored by [IJACK Technologies](https://myijack.com/).
+[![IJACK Technologies](https://raw.githubusercontent.com/coultonf/inertia-flask/main/IJACK.png)](https://myijack.com/)
