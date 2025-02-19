@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 from flask import Blueprint, Flask, request, session
 from flask.app import App
@@ -10,7 +10,7 @@ from .version import get_asset_version
 
 
 class Inertia:
-    def __init__(self, app: Optional[Flask | Blueprint] = None):
+    def __init__(self, app: Optional[Union[Flask, Blueprint]] = None):
         self.app = None
         if app is not None:
             self.init_app(app)

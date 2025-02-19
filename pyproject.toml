@@ -32,7 +32,7 @@ python_files = "test_*.py"
 addopts = "-v"
 
 [tool.poetry.scripts]
-run-demo = "demo.app:main"
+demo = "demo.app:main"
 
 [tool.ruff.lint]
 select = [
