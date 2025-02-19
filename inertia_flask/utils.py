@@ -9,10 +9,6 @@ class InertiaJsonEncoder(json.JSONEncoder):
         return super().default(value)
 
 
-class InertiaCsrf:
-    """CSRF protection for Inertia requests."""
-
-
 def lazy(prop):
     warnings.warn(
         "lazy is deprecated and will be removed in a future version. Please use optional instead.",

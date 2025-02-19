@@ -1,4 +1,3 @@
-import secrets
 from typing import Optional
 
 from flask import Blueprint, Flask, request, session
@@ -6,7 +5,6 @@ from flask.app import App
 from flask.blueprints import BlueprintSetupState
 from werkzeug.wrappers import Response
 
-from .csrf import InertiaCsrf
 from .http import encrypt_history, render
 from .version import get_asset_version
 
@@ -14,15 +12,12 @@ from .version import get_asset_version
 class Inertia:
     def __init__(self, app: Optional[Flask] = None):
         self.app = None
-        self.csrf = None
         if app is not None:
             self.init_app(app)
 
-    def init_app(self, app, encrypt=False, csrf=True):
+    def init_app(self, app, encrypt=False):
         self.app = app
         self.encrypt = encrypt
-        if csrf:
-            self.csrf = InertiaCsrf(app)
         if isinstance(app, Flask):
             self._init_extension(app)
         elif isinstance(app, Blueprint):
@@ -44,19 +39,8 @@ class Inertia:
         app.extensions["inertia"] = self
 
     def before_request(self):
-        # Generate CSRF token if it doesn't exist
-        if self.csrf and self.app.config["INERTIA_CSRF_ENABLED"]:
-            session_key = self.app.config["INERTIA_CSRF_SESSION_KEY"]
-            if session_key not in session:
-                session[session_key] = self.csrf.generate_csrf_token()
-
-        # Validate CSRF token for non-GET requests
-        if request.method in self.app.config["INERTIA_CSRF_METHODS"]:
-            self.csrf.validate_csrf_token()
         if self.encrypt:
             encrypt_history(self.encrypt)
-        if self.csrf and request.method not in ["GET", "OPTIONS", "HEAD"]:
-            return Response("CSRF token mismatch", status=403)
 
     def after_request(self, response):
         if not self.is_inertia_request():
@@ -99,12 +83,6 @@ class Inertia:
             del session["messages"]
 
         return Response("", status=409, headers={"X-Inertia-Location": request.url})
-
-    def generate_csrf_token(self):
-        # Generate a random token - in a real app you might want to use
-        # Flask-WTF or another CSRF library
-
-        return secrets.token_hex(32)
 
     def add_shorthand_route(
         self,
