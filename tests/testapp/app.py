@@ -2,7 +2,7 @@ from time import sleep
 
 from flask import Flask
 
-from inertia_flask import Inertia, defer, inertia
+from inertia_flask import Inertia, clear_history, defer, encrypt_history, inertia, merge
 
 
 def create_app():
@@ -17,6 +17,14 @@ def create_app():
 
     inertia_ext.add_shorthand_route("/shorthand", "component")
 
+    def get_email():
+        sleep(0.1)
+        return "alice@wonderland.com"
+
+    def get_phone():
+        sleep(0.1)
+        return "1234567890"
+
     @app.route("/")
     @inertia("component")
     def root():
@@ -25,20 +33,15 @@ def create_app():
     @app.route("/defer")
     @inertia("component")
     def defer_page():
-        def get_email():
-            sleep(0.1)
-            return "alice@wonderland.com"
-
         return {"name": "Alice", "email": defer(get_email)}
 
-    @app.route("/defer-group")
-    @inertia("defer-group")
+    @app.route("/group")
+    @inertia("component")
     def deferred_group():
         return {
-            "name": "Jane Doe",
-            "deferred": defer(lambda: "deferred result", group="default"),
-            "defer-group-value": defer(lambda: "group result 2", group="group-defer"),
-            "defer-group-other": defer(lambda: "other result 2", group="group-defer"),
+            "name": "Alice",
+            "email": defer(get_email, group="contact"),
+            "phone": defer(get_phone, group="contact"),
         }
 
     @app.route("/defer-merge")
@@ -48,6 +51,35 @@ def create_app():
             "name": "Jane Doe",
             "defer-merge": defer(lambda: ["1"], merge=True),
         }
+
+    @app.route("/merge")
+    @inertia("component")
+    def merge_props():
+        return {
+            "numbers": merge([1]),
+        }
+
+    @app.route("/encrypt-decorator")
+    @inertia("component", encrypt=True)
+    def encrypt_decorator():
+        return {}
+
+    @app.route("/clear-function")
+    @inertia("component")
+    def clear_function():
+        clear_history()
+        return {}
+
+    @app.route("/clear-decorator")
+    @inertia("component", clear=True)
+    def clear_decorator():
+        return {}
+
+    @app.route("/encrypt-function")
+    @inertia("component")
+    def encrypt_function():
+        encrypt_history()
+        return {}
 
     return app
 

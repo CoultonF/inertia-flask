@@ -10,7 +10,7 @@ class TestDefer(TestInertiaPartial):
     props = "email"
     expected_props = {"name": "Alice"}
     deferred_props = {"default": [props]}
-    expected_deferred_props = {"email": "alice@wonderland.com"}
+    expected_deferred_props = {props: "alice@wonderland.com"}
 
     def test_inertia_initial_deferred_render(self, test_client, app):
         """Test that Inertia is available on the test client."""

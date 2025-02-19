@@ -79,9 +79,34 @@ class TestInertiaPartial(TestInertia):
 
     def inertia_initial_expect_partial(self, app, props=None):
         expected = super().inertia_expect(app, props)
-        expected["deferredProps"] = self.deferred_props or props
+        expected["deferredProps"] = props or self.deferred_props
         return expected
 
     def inertia_expect_partial(self, app, props):
         expected = super().inertia_expect(app, props)
+        return expected
+
+
+class TestInertiaMerge(TestInertiaPartial):
+    @property
+    @abstractmethod
+    def merge_props(self):
+        """Subclasses must define the merge_props attribute."""
+
+    @property
+    def deferred_props(self):
+        return {}
+
+    @property
+    def props(self):
+        return {}
+
+    def inertia_initial_expect_merge(self, app, props=None):
+        expected = super().inertia_expect(app, props)
+        expected["mergeProps"] = self.merge_props or props
+        return expected
+
+    def inertia_expect_merge(self, app, props=None):
+        expected = super().inertia_expect(app, props)
+        expected["mergeProps"] = props or self.merge_props
         return expected

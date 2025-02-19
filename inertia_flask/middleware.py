@@ -6,24 +6,31 @@ from flask.app import App
 from flask.blueprints import BlueprintSetupState
 from werkzeug.wrappers import Response
 
-from .http import render
+from .csrf import InertiaCsrf
+from .http import encrypt_history, render
 from .version import get_asset_version
 
 
 class Inertia:
     def __init__(self, app: Optional[Flask] = None):
         self.app = None
+        self.csrf = None
         if app is not None:
             self.init_app(app)
 
-    def init_app(self, app):
+    def init_app(self, app, encrypt=False, csrf=True):
         self.app = app
+        self.encrypt = encrypt
+        if csrf:
+            self.csrf = InertiaCsrf(app)
         if isinstance(app, Flask):
             self._init_extension(app)
         elif isinstance(app, Blueprint):
             blueprint = app
             # Register the extension once the blueprint is registered
             blueprint.record_once(self.register_blueprint)
+        if encrypt:
+            app.before_request(lambda: encrypt_history(encrypt))
         app.before_request(self.before_request)
         app.after_request(self.after_request)
 
@@ -38,8 +45,18 @@ class Inertia:
 
     def before_request(self):
         # Generate CSRF token if it doesn't exist
-        if "csrf_token" not in session:
-            session["csrf_token"] = self.generate_csrf_token()
+        if self.csrf and self.app.config["INERTIA_CSRF_ENABLED"]:
+            session_key = self.app.config["INERTIA_CSRF_SESSION_KEY"]
+            if session_key not in session:
+                session[session_key] = self.csrf.generate_csrf_token()
+
+        # Validate CSRF token for non-GET requests
+        if request.method in self.app.config["INERTIA_CSRF_METHODS"]:
+            self.csrf.validate_csrf_token()
+        if self.encrypt:
+            encrypt_history(self.encrypt)
+        if self.csrf and request.method not in ["GET", "OPTIONS", "HEAD"]:
+            return Response("CSRF token mismatch", status=403)
 
     def after_request(self, response):
         if not self.is_inertia_request():
@@ -90,7 +107,11 @@ class Inertia:
         return secrets.token_hex(32)
 
     def add_shorthand_route(
-        self, url: str, component_name: str, endpoint: Optional[str] = None
+        self,
+        url: str,
+        component_name: str,
+        endpoint: Optional[str] = None,
+        encrypt=None,
     ) -> None:
         """Connect a URL rule to a frontend component that does not need a controller.
 
@@ -105,10 +126,15 @@ class Inertia:
         if not self.app:
             raise RuntimeError("Extension has not been initialized correctly.")
 
+        def route_render(component_name):
+            if encrypt is not None:
+                encrypt_history(encrypt)
+            return render(request, component_name)
+
         self.app.add_url_rule(
             url,
             endpoint or component_name.lower(),
-            lambda: render(request, component_name),
+            lambda: route_render(component_name),
         )
 
 

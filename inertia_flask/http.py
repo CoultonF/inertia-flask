@@ -1,7 +1,6 @@
 import json
 from functools import wraps
 from http import HTTPStatus
-from typing import Optional
 
 from flask import (
     Response,
@@ -184,7 +183,7 @@ class InertiaResponse(BaseInertiaResponseMixin, Response):
         super().__init__(content, headers=_headers, *args, **kwargs)
 
 
-def inertia(component):
+def inertia(component, encrypt=None, clear=False):
     def decorator(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
@@ -193,12 +192,15 @@ def inertia(component):
                 raise RuntimeError(
                     "Inertia middleware is not initialized in the current app context."
                 )
+            if encrypt is not None:
+                encrypt_history(encrypt)
+            if clear:
+                clear_history()
             props = f(*args, **kwargs)
 
             # If something other than a dict is returned, return it directly
             if not isinstance(props, dict):
                 return props
-
             return InertiaResponse(request, component, props)
 
         return decorated_function
@@ -208,29 +210,6 @@ def inertia(component):
 
 def render(request, component, props=None, template_data=None):
     return InertiaResponse(request, component, props or {}, template_data or {})
-
-
-def add_shorthand_route(
-    self, url: str, component_name: str, endpoint: Optional[str] = None
-) -> None:
-    """Connect a URL rule to a frontend component that does not need a controller.
-
-    This url does not have dedicated python source code but is linked to a JS component,
-    (i.e. a frontend component which does not need props nor view_data).
-
-    :param url: The URL rule as string as used in ``flask.add_url_rule``
-    :param component_name: Your frontend component name
-    :param endpoint: The endpoint for the registered URL rule. (by default
-                     ``component_name`` in lower case)
-    """
-    if not self.app:
-        raise RuntimeError("Extension has not been initialized correctly.")
-
-    self.app.add_url_rule(
-        url,
-        endpoint or component_name.lower(),
-        lambda: render_inertia(component_name),
-    )
 
 
 def location(url):
