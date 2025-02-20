@@ -2,6 +2,7 @@ from datetime import datetime
 from random import randint
 
 from flask import Flask
+from flask_seasurf import SeaSurf
 from flask_sqlalchemy import SQLAlchemy
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -15,11 +16,13 @@ class Base(DeclarativeBase):
 
 db = SQLAlchemy(model_class=Base)
 inertia_ext = Inertia()
+csrf = SeaSurf()
 app = Flask(__name__)
 app.secret_key = "your-secret-key"  # Required for session
 app.config["INERTIA_TEMPLATE"] = "base.html"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///demo.db"
 db.init_app(app)
+csrf.init_app(app)
 inertia_ext.init_app(app)
 
 inertia_ext.add_shorthand_route("/test", "test")

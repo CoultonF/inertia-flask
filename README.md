@@ -73,7 +73,13 @@ axios.defaults.xsrfCookieName = "_csrf_token";
 ```
 This ensures that Axios automatically includes the CSRF token in requests, aligning with Seasurf's protection mechanism.
 
+## Use
+
+###
+
 ## Examples
+
+Ensure you have pnpm/npm installed and are on the latest version of node as Vite has dropped support for Node v21. If you are encountering issues around node and using Windows, try to sign out.
 
 To run the example project, follow these steps:
 
