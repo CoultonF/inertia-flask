@@ -131,4 +131,4 @@ Parts of this repo were inspired by:
 
 Maintained and sponsored by [IJACK Technologies](https://myijack.com/).
 
-[![IJACK Technologies](https://raw.githubusercontent.com/coultonf/inertia-flask/main/IJACK.png)](https://myijack.com/)
+<a href="https://myijack.com/"> <img src="https://raw.githubusercontent.com/coultonf/inertia-flask/main/IJACK.png" alt="IJACK Technologies" width="120" /> </a> 
