@@ -65,7 +65,7 @@ inertia = Inertia(blueprint)
 
 Flask does not provide CSRF protection by default. To handle CSRF protection, you can use the [Flask Seasurf](https://github.com/maxcountryman/flask-seasurf) extension, which is a simple and effective solution for Flask applications.
 
-To integrate Seasurf with Inertia.js, configure Axios in your .js entry file as follows:
+Inertia.js uses Axios as the requests library. You can modify axios to integrate Seasurf with Inertia.js in your .js entry file as follows:
 
 ```javascript
 axios.defaults.xsrfHeaderName = "X-CSRFToken";
