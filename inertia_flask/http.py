@@ -179,6 +179,11 @@ class InertiaResponse(BaseInertiaResponseMixin, Response):
             content = data
         else:
             content = self.build_first_load(data)
+            # for ssr
+            # pnpm run build
+            # node dist/server/ssr.js
+            # send post localhost:13714/render json=data
+            # https://github.com/inertiajs/inertia/blob/master/packages/core/src/server.ts
 
         super().__init__(content, headers=_headers, *args, **kwargs)
 

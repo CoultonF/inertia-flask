@@ -4,27 +4,35 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node server",
-    "build": "npm run build:client && npm run build:server",
+    "dev": "vite",
     "build:client": "vite build --outDir dist/client",
-    "build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
-    "preview": "cross-env NODE_ENV=production node server"
+    "build:server": "vite build --outDir dist/server --ssr src/ssr.tsx",
+    "build": "pnpm run build:client && pnpm run build:server",
+    "lint": "eslint .",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "compression": "^1.7.5",
-    "express": "^5.0.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "sirv": "^3.0.0"
+    "@inertiajs/react": "^2.0.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
-    "@types/node": "^22.10.0",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react-swc": "^3.7.1",
-    "cross-env": "^7.0.3",
-    "typescript": "~5.7.2",
-    "vite": "^6.0.1"
+    "@eslint/js": "^9.20.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react-swc": "^3.8.0",
+    "eslint": "^9.20.1",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^15.15.0",
+    "typescript": "~5.7.3",
+    "typescript-eslint": "^8.24.1",
+    "vite": "^6.1.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "esbuild"
+    ]
   }
 }
