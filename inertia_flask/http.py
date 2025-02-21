@@ -2,6 +2,7 @@ import json
 from functools import wraps
 from http import HTTPStatus
 
+import requests
 from flask import (
     Response,
     current_app,
@@ -15,12 +16,12 @@ from markupsafe import Markup
 
 from .helpers import deep_transform_callables, validate_type
 from .prop_classes import DeferredProp, IgnoreOnFirstLoadProp, MergeableProp
-from .settings import settings
 from .version import get_asset_version
 
 INERTIA_REQUEST_ENCRYPT_HISTORY = "_inertia_encrypt_history"
 INERTIA_SESSION_CLEAR_HISTORY = "_inertia_clear_history"
 INERTIA_TEMPLATE = "inertia.html"
+INERTIA_SSR_TEMPLATE = "inertia.html"
 INERTIA_ROOT = "root"
 
 
@@ -56,7 +57,7 @@ class InertiaRequest:
             getattr(
                 self.flask_request,
                 INERTIA_REQUEST_ENCRYPT_HISTORY,
-                settings.INERTIA_ENCRYPT_HISTORY,
+                current_app.config["INERTIA_ENCRYPT_HISTORY"],
             ),
             expected_type=bool,
             name="encrypt_history",
@@ -148,6 +149,31 @@ class BaseInertiaResponseMixin:
             **self.template_data,
         )
 
+    def build_first_load_context_and_template(self, data):
+        """T"""
+        if current_app.config["INERTIA_SSR_ENABLED"]:
+            try:
+                response = requests.post(
+                    f"{current_app.config['INERTIA_SSR_URL']}/render",
+                    data=data,
+                    headers={"Content-Type": "application/json"},
+                )
+                response.raise_for_status()
+                return {
+                    **response.json(),
+                    **self.template_data,
+                }, INERTIA_SSR_TEMPLATE
+            except requests.exceptions.RequestException as exc:
+                current_app.logger.error(
+                    f"Failed to render with SSR: {exc}.\
+                    Falling back to client-side rendering."
+                )
+
+        return {
+            "page": data,
+            **(self.template_data),
+        }, INERTIA_TEMPLATE
+
 
 class InertiaResponse(BaseInertiaResponseMixin, Response):
     def __init__(
@@ -164,7 +190,7 @@ class InertiaResponse(BaseInertiaResponseMixin, Response):
         self.component = component
         self.props = props or {}
         self.template_data = template_data or {}
-        self.json_encoder = settings.INERTIA_JSON_ENCODER
+        self.json_encoder = current_app.config["INERTIA_JSON_ENCODER"]
         _headers = headers or {}
 
         data = json.dumps(self.page_data(), cls=self.json_encoder, default=str)

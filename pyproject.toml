@@ -10,6 +10,7 @@ packages = [{include = "inertia_flask"}]
 python = "^3.9"
 flask = "^3.1.0"
 markupsafe = "^3.0.2"
+requests = "^2.32.3"
 
 [tool.poetry.group.dev]
 optional = true

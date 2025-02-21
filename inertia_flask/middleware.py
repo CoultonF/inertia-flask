@@ -6,6 +6,7 @@ from flask.blueprints import BlueprintSetupState
 from werkzeug.wrappers import Response
 
 from .http import encrypt_history, render
+from .settings import Settings
 from .version import get_asset_version
 
 
@@ -16,6 +17,7 @@ class Inertia:
             self.init_app(app)
 
     def init_app(self, app, encrypt=False):
+        app.config.from_object(Settings)
         self.app = app
         self.encrypt = encrypt
         if isinstance(app, Flask):
