@@ -1,5 +1,6 @@
 import { createInertiaApp } from '@inertiajs/react'
 import createServer from '@inertiajs/react/server'
+import React from 'react'
 import { renderToString } from 'react-dom/server';
 
 
@@ -11,7 +12,6 @@ createServer(page =>
       const pages = import.meta.glob('./Pages/**/*.tsx', { eager: true })
       return pages[`./Pages/${name}.tsx`]
     },
-    setup: ({ App, props }) => <App {...props} />,
-  }),
-  13714
+    setup: ({ App, props }) => <App {...props} />
+  })
 )

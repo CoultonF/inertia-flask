@@ -4,7 +4,7 @@ import { router } from '@inertiajs/react'
 
 function Component(props){
   
-  // usePoll(2000, {only:['value']})
+  usePoll(2000, {only:['value']})
 
   return (
   <div>Hello from inertia!

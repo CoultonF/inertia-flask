@@ -21,8 +21,8 @@ from .version import get_asset_version
 INERTIA_REQUEST_ENCRYPT_HISTORY = "_inertia_encrypt_history"
 INERTIA_SESSION_CLEAR_HISTORY = "_inertia_clear_history"
 INERTIA_TEMPLATE = "inertia.html"
-INERTIA_SSR_TEMPLATE = "inertia.html"
-INERTIA_ROOT = "root"
+INERTIA_SSR_TEMPLATE = "inertia_ssr.html"
+INERTIA_ROOT = "app"
 
 
 class InertiaRequest:
@@ -157,22 +157,30 @@ class BaseInertiaResponseMixin:
                     f"{current_app.config['INERTIA_SSR_URL']}/render",
                     data=data,
                     headers={"Content-Type": "application/json"},
+                    timeout=5,
                 )
                 response.raise_for_status()
-                return {
-                    **response.json(),
+                return render_template(
+                    current_app.config.get(
+                        "INERTIA_SSR_TEMPLATE", INERTIA_SSR_TEMPLATE
+                    ),
+                    inertia=Markup(response.json()["body"]),
                     **self.template_data,
-                }, INERTIA_SSR_TEMPLATE
-            except requests.exceptions.RequestException as exc:
-                current_app.logger.error(
-                    f"Failed to render with SSR: {exc}.\
-                    Falling back to client-side rendering."
                 )
-
-        return {
-            "page": data,
-            **(self.template_data),
-        }, INERTIA_TEMPLATE
+            except requests.exceptions.RequestException:
+                current_app.logger.error("Falling back to client-side rendering.")
+        inertia_div = Markup(
+            render_template_string(
+                f"""<div id="{current_app.config.get("INERTIA_ROOT", INERTIA_ROOT)}" data-page="{{{{ page|escape }}}}"></div>""",
+                page=data,
+            )
+        )
+        return render_template(
+            current_app.config.get("INERTIA_TEMPLATE", INERTIA_TEMPLATE),
+            page=data,
+            inertia=inertia_div,
+            **self.template_data,
+        )
 
 
 class InertiaResponse(BaseInertiaResponseMixin, Response):
@@ -204,7 +212,7 @@ class InertiaResponse(BaseInertiaResponseMixin, Response):
             }
             content = data
         else:
-            content = self.build_first_load(data)
+            content = self.build_first_load_context_and_template(data)
             # for ssr
             # pnpm run build
             # node dist/server/ssr.js
