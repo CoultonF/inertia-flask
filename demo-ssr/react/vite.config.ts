@@ -6,7 +6,9 @@ export default defineConfig({
   plugins: [react()],
   build: {
     emptyOutDir: true,
+    copyPublicDir: false,
     minify: false,
+    manifest: 'manifest.json',
     rollupOptions: {
       input: 'src/main.tsx',
       output: {

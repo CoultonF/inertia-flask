@@ -2,7 +2,7 @@ from tests.test_inertia import TestInertia
 
 
 class TestEncryptDecorator(TestInertia):
-    root = "root"
+    root = "app"
     component = "component"
     route = "/encrypt-decorator"
 
@@ -15,7 +15,7 @@ class TestEncryptDecorator(TestInertia):
 
 
 class TestEncryptFunction(TestInertia):
-    root = "root"
+    root = "app"
     component = "component"
     route = "/encrypt-function"
 
@@ -28,7 +28,7 @@ class TestEncryptFunction(TestInertia):
 
 
 class TestClearFunction(TestInertia):
-    root = "root"
+    root = "app"
     component = "component"
     route = "/clear-function"
 
@@ -41,7 +41,7 @@ class TestClearFunction(TestInertia):
 
 
 class TestClearDecorator(TestInertia):
-    root = "root"
+    root = "app"
     component = "component"
     route = "/clear-decorator"
 

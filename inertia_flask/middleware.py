@@ -1,6 +1,7 @@
+import json
 from typing import Optional, Union
 
-from flask import Blueprint, Flask, request, session
+from flask import Blueprint, Flask, current_app, request, session
 from flask.app import App
 from flask.blueprints import BlueprintSetupState
 from werkzeug.wrappers import Response
@@ -28,6 +29,7 @@ class Inertia:
             blueprint.record_once(self.register_blueprint)
         if encrypt:
             app.before_request(lambda: encrypt_history(encrypt))
+        app.context_processor(self.vite_processor)
         app.before_request(self.before_request)
         app.after_request(self.after_request)
 
@@ -116,6 +118,66 @@ class Inertia:
             endpoint or component_name.lower(),
             lambda: route_render(component_name),
         )
+
+    def vite_processor(self):
+        flask_debug = current_app.config["DEBUG"]
+        vite_origin = current_app.config["VITE_ORIGIN"]
+        vite_dist = current_app.config["VITE_DIST"]
+        is_debug = flask_debug == "1"
+
+        def dev_asset(file_path, _):
+            return f"{vite_origin}/{file_path}"
+
+        def prod_asset(file_path, manifest_path):
+            manifest = {}
+            try:
+                with open(manifest_path, encoding="utf-8") as content:
+                    manifest = json.load(content)
+                return f"{vite_dist}/{manifest[file_path]['file']}"
+            except OSError as exception:
+                raise OSError(
+                    f"Manifest file not found at {manifest_path}. Run `npm run build`."
+                ) from exception
+
+        def vite_react_refresh():
+            return f"""
+                <script type="module">
+                import RefreshRuntime from '{vite_origin}/@react-refresh'
+                RefreshRuntime.injectIntoGlobalHook(window)
+                window.$RefreshReg$ = () => {{}}
+                window.$RefreshSig$ = () => (type) => type
+                window.__vite_plugin_react_preamble_installed__ = true
+                </script>
+            """
+
+        def vite_hmr():
+            return f"""
+                <script type="module" src="{vite_origin}/@vite/client"></script>
+            """
+
+        def vite_inertia(entry_file, manifest_path):
+            output = ""
+            if is_debug:
+                output += vite_react_refresh()
+                output += vite_hmr()
+                output += f"""
+                <script type="module" src="{dev_asset(entry_file, manifest_path)}">
+                </script>
+                """
+            else:
+                output += f"""
+                <script defer src="{prod_asset(entry_file, manifest_path)}"></script>
+                """
+
+            return output
+
+        return {
+            "vite_inertia": vite_inertia,
+            "vite_hmr": vite_hmr if is_debug else "",
+            "vite_react_refresh": vite_react_refresh if is_debug else "",
+            "vite_asset": dev_asset if is_debug else prod_asset,
+            "vite_is_debug": is_debug,
+        }
 
 
 # Example usage of flash messages helper

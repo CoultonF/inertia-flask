@@ -47,6 +47,7 @@ _cacache/
 _logs/
 _update-notifier-last-checked
 pnpm-lock.yaml
+dist/
 
 # Database
 **/instance/

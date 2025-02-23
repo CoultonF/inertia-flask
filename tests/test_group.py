@@ -4,7 +4,7 @@ from tests.test_inertia import TestInertiaPartial
 
 
 class TestGroup(TestInertiaPartial):
-    root = "root"
+    root = "app"
     route = "/group"
     component = "component"
     props = "email,phone"

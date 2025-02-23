@@ -4,7 +4,7 @@ from tests.test_inertia import TestInertia
 
 
 class TestPage(TestInertia):
-    root = "root"
+    root = "app"
     route = "/"
     component = "component"
     expected_props = {"name": "Alice"}
@@ -22,7 +22,7 @@ class TestPage(TestInertia):
 
 
 class TestShorthand(TestInertia):
-    root = "root"
+    root = "app"
     route = "/shorthand"
     component = "component"
 

@@ -4,7 +4,7 @@ from tests.test_inertia import TestInertiaPartial
 
 
 class TestDefer(TestInertiaPartial):
-    root = "root"
+    root = "app"
     route = "/defer"
     component = "component"
     props = "email"

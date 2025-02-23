@@ -6,3 +6,5 @@ class Settings:
     INERTIA_ENCRYPT_HISTORY = False
     INERTIA_SSR_ENABLED = False
     INERTIA_SSR_URL = "http://localhost:13714"
+    VITE_ORIGIN = "http://localhost:5173"
+    VITE_DIST = "dist"

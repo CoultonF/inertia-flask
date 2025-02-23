@@ -21,7 +21,7 @@ from .version import get_asset_version
 INERTIA_REQUEST_ENCRYPT_HISTORY = "_inertia_encrypt_history"
 INERTIA_SESSION_CLEAR_HISTORY = "_inertia_clear_history"
 INERTIA_TEMPLATE = "inertia.html"
-INERTIA_SSR_TEMPLATE = "inertia_ssr.html"
+INERTIA_SSR_TEMPLATE = "inertia.html"
 INERTIA_ROOT = "app"
 
 
@@ -132,27 +132,9 @@ class BaseInertiaResponseMixin:
         ]
 
     def build_first_load(self, data):
-        inertia_div = Markup(
-            render_template_string(
-                f"""
-                <div
-                id="{current_app.config.get("INERTIA_ROOT", INERTIA_ROOT)}"
-                data-page="{{{{ page|escape }}}}"></div>
-                """,
-                page=data,
-            )
-        )
-        return render_template(
-            current_app.config.get("INERTIA_TEMPLATE", INERTIA_TEMPLATE),
-            page=data,
-            inertia=inertia_div,
-            **self.template_data,
-        )
-
-    def build_first_load_context_and_template(self, data):
-        """T"""
         if current_app.config["INERTIA_SSR_ENABLED"]:
             try:
+                # https://github.com/inertiajs/inertia/blob/master/packages/core/src/server.ts
                 response = requests.post(
                     f"{current_app.config['INERTIA_SSR_URL']}/render",
                     data=data,
@@ -212,12 +194,7 @@ class InertiaResponse(BaseInertiaResponseMixin, Response):
             }
             content = data
         else:
-            content = self.build_first_load_context_and_template(data)
-            # for ssr
-            # pnpm run build
-            # node dist/server/ssr.js
-            # send post localhost:13714/render json=data
-            # https://github.com/inertiajs/inertia/blob/master/packages/core/src/server.ts
+            content = self.build_first_load(data)
 
         super().__init__(content, headers=_headers, *args, **kwargs)
 

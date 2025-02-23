@@ -4,7 +4,7 @@ from tests.test_inertia import TestInertiaMerge
 
 
 class TestMerge(TestInertiaMerge):
-    root = "root"
+    root = "app"
     route = "/merge"
     component = "component"
     props = "numbers"
