@@ -1,7 +1,7 @@
 import json
 from typing import Optional, Union
 
-from flask import Blueprint, Flask, current_app, request, session
+from flask import Blueprint, Flask, current_app, request, session, url_for
 from flask.app import App
 from flask.blueprints import BlueprintSetupState
 from werkzeug.wrappers import Response
@@ -122,8 +122,11 @@ class Inertia:
     def vite_processor(self):
         flask_debug = current_app.config["DEBUG"]
         vite_origin = current_app.config["VITE_ORIGIN"]
-        vite_dist = current_app.config["VITE_DIST"]
-        is_debug = flask_debug == "1"
+        vite_client_manifest = current_app.config["VITE_CLIENT_MANIFEST"]
+        vite_client_assets = current_app.config["VITE_CLIENT_ASSETS"]
+        vite_server_manifest = current_app.config["VITE_SERVER_MANIFEST"]
+        vite_static = current_app.config["VITE_STATIC"]
+        is_debug = flask_debug is True
 
         def dev_asset(file_path, _):
             return f"{vite_origin}/{file_path}"
@@ -131,12 +134,15 @@ class Inertia:
         def prod_asset(file_path, manifest_path):
             manifest = {}
             try:
-                with open(manifest_path, encoding="utf-8") as content:
+                with open(
+                    f"{current_app.root_path}/{vite_client_manifest}", encoding="utf-8"
+                ) as content:
                     manifest = json.load(content)
-                return f"{vite_dist}/{manifest[file_path]['file']}"
+                    url_path = manifest[file_path]["file"]
+                return url_for(vite_static, filename=url_path)
             except OSError as exception:
                 raise OSError(
-                    f"Manifest file not found at {manifest_path}. Run `npm run build`."
+                    f"Manifest file not found at {manifest_filepath}. Run `npm run build`."
                 ) from exception
 
         def vite_react_refresh():

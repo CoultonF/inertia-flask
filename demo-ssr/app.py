@@ -17,7 +17,7 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 inertia_ext = Inertia()
 csrf = SeaSurf()
-app = Flask(__name__, static_folder="react/dist/client")
+app = Flask(__name__, static_folder="static")
 app.secret_key = "your-secret-key"  # Required for session
 app.config["INERTIA_TEMPLATE"] = "base.html"
 app.config["INERTIA_SSR_TEMPLATE"] = "base.html"
@@ -25,6 +25,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///demo.db"
 db.init_app(app)
 csrf.init_app(app)
 inertia_ext.init_app(app)
+app.config["VITE_DIST"] = "react/dist"
 app.config["INERTIA_SSR_ENABLED"] = True
 
 inertia_ext.add_shorthand_route("/test", "test")
@@ -79,7 +80,7 @@ def hello_world():
 
 def main():
     init_db()
-    app.run(debug=True)
+    app.run(debug=False)
 
 
 if __name__ == "__main__":

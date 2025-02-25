@@ -7,4 +7,6 @@ class Settings:
     INERTIA_SSR_ENABLED = False
     INERTIA_SSR_URL = "http://localhost:13714"
     VITE_ORIGIN = "http://localhost:5173"
-    VITE_DIST = "dist"
+    VITE_CLIENT = "dist/client"
+    VITE_SERVER = "dist/server"
+    VITE_STATIC = "static"
