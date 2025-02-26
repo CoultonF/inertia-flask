@@ -1,11 +1,15 @@
 import json
 import os
+import subprocess
+import threading
+import time
 from typing import Optional, Union
 
 import requests
 from flask import Blueprint, Flask, current_app, request, session, url_for
 from flask.app import App
 from flask.blueprints import BlueprintSetupState
+from flask.cli import AppGroup
 from werkzeug.wrappers import Response
 
 from .http import encrypt_history, render
@@ -34,6 +38,7 @@ class Inertia:
         app.context_processor(self.vite_processor)
         app.before_request(self.before_request)
         app.after_request(self.after_request)
+        app.cli.add_command(self.vite_cli)
 
     def register_blueprint(self, state: BlueprintSetupState):
         self._init_extension(state.app)
@@ -122,16 +127,22 @@ class Inertia:
         )
 
     def vite_processor(self):
-        flask_debug = current_app.config["DEBUG"]
-        vite_origin = current_app.config["VITE_ORIGIN"]
-        vite_static = current_app.config["VITE_STATIC"]
-        vite_client = current_app.config["VITE_CLIENT"]
-        vite_static = current_app.config["VITE_STATIC"]
-        vite_manifest = current_app.config["VITE_MANIFEST"]
+        flask_debug = current_app.config.get("DEBUG", False)
+        vite_origin = current_app.config.get("VITE_ORIGIN", "http://localhost:5173")
+        vite_static = current_app.config.get("VITE_STATIC", "static")
+        vite_client = current_app.config.get("VITE_CLIENT", "client")
+        vite_manifest = current_app.config.get("VITE_MANIFEST", "manifest.json")
         is_debug = flask_debug is True
-        ssr_enabled = current_app.config["INERTIA_SSR_ENABLED"]
-        if ssr_enabled and is_debug:
-            is_debug = True
+        ssr_enabled = current_app.config.get("INERTIA_SSR_ENABLED", False)
+
+        # Detect if Vite dev server is running
+        vite_dev_server_running = False
+        if is_debug:
+            try:
+                response = requests.get(f"{vite_origin}/@vite/client", timeout=0.1)
+                vite_dev_server_running = response.status_code == 200
+            except:
+                vite_dev_server_running = False
 
         def dev_asset(file_path, _=None):
             return f"{vite_origin}/{file_path}"
@@ -139,22 +150,33 @@ class Inertia:
         def prod_asset(file_path, manifest_path=None):
             manifest = {}
             manifest_path = os.path.join(
-                self.app.root_path,
-                vite_static,
-                vite_client,
-                vite_manifest
-                )
+                self.app.root_path, vite_static, vite_client, vite_manifest
+            )
 
             try:
-                with open(
-                    f"{manifest_path}", encoding="utf-8"
-                ) as content:
+                with open(f"{manifest_path}", encoding="utf-8") as content:
                     manifest = json.load(content)
-                    url_path = manifest[file_path]["file"]
-                return url_for(vite_static, filename=f"{vite_client}/{url_path}")
+                    if file_path in manifest:
+                        url_path = manifest[file_path]["file"]
+                        return url_for(
+                            vite_static, filename=f"{vite_client}/{url_path}"
+                        )
+                    else:
+                        current_app.logger.warning(
+                            f"Asset {file_path} not found in manifest"
+                        )
+                        return url_for(
+                            vite_static, filename=f"{vite_client}/{file_path}"
+                        )
             except OSError as exception:
+                current_app.logger.error(
+                    f"Manifest file not found at {manifest_path}. Run `npm run build`."
+                )
+                # Fallback to direct path in development
+                if is_debug:
+                    return url_for(vite_static, filename=f"{vite_client}/{file_path}")
                 raise OSError(
-                    f"Manifest file not found. Run `npm run build`."
+                    "Manifest file not found. Run `npm run build`."
                 ) from exception
 
         def vite_react_refresh():
@@ -175,7 +197,7 @@ class Inertia:
 
         def vite_inertia(entry_file, manifest_path=None):
             output = ""
-            if is_debug:
+            if is_debug and vite_dev_server_running:
                 output += vite_react_refresh()
                 output += vite_hmr()
                 output += f"""
@@ -183,19 +205,102 @@ class Inertia:
                 </script>
                 """
             else:
+                # Use production assets even in debug mode if Vite server isn't running
+                css_files = []
+                try:
+                    manifest_path = os.path.join(
+                        self.app.root_path, vite_static, vite_client, vite_manifest
+                    )
+                    with open(f"{manifest_path}", encoding="utf-8") as content:
+                        manifest = json.load(content)
+                        if entry_file in manifest and "css" in manifest[entry_file]:
+                            css_files = manifest[entry_file]["css"]
+                except:
+                    pass
+
+                # Include CSS files
+                for css_file in css_files:
+                    output += f"""
+                    <link rel="stylesheet" href="{url_for(vite_static, filename=f"{vite_client}/{css_file}")}">
+                    """
+
+                # Include JS
                 output += f"""
-                <script defer src="{prod_asset(entry_file, manifest_path)}"></script>
+                <script type="module" src="{prod_asset(entry_file, manifest_path)}"></script>
                 """
 
             return output
 
         return {
             "vite_inertia": vite_inertia,
-            "vite_hmr": vite_hmr if is_debug else "",
-            "vite_react_refresh": vite_react_refresh if is_debug else "",
-            "vite_asset": dev_asset if is_debug else prod_asset,
+            "vite_hmr": vite_hmr
+            if is_debug and vite_dev_server_running
+            else lambda: "",
+            "vite_react_refresh": vite_react_refresh
+            if is_debug and vite_dev_server_running
+            else lambda: "",
+            "vite_asset": dev_asset
+            if is_debug and vite_dev_server_running
+            else prod_asset,
             "vite_is_debug": is_debug,
+            "vite_dev_server_running": vite_dev_server_running,
         }
+
+    vite_cli = AppGroup("vite", help="Vite integration commands")
+
+    def run_vite_dev(self):
+        """Run Vite dev server in a separate thread"""
+        vite_dir = self.app.config.get("VITE_DIR")
+        vite_dir_path = os.path.join(self.app.root_path, vite_dir)
+
+        # Check if package.json exists
+        if not os.path.exists(os.path.join(vite_dir_path, "package.json")):
+            print(f"Error: No package.json found in {vite_dir_path}")
+            return
+
+        # Determine package manager (npm, yarn, pnpm)
+        package_manager = "npm"
+        if os.path.exists(os.path.join(vite_dir_path, "pnpm-lock.yaml")):
+            package_manager = "pnpm"
+        elif os.path.exists(os.path.join(vite_dir_path, "yarn.lock")):
+            package_manager = "yarn"
+
+        # Run Vite dev server
+        os.chdir(vite_dir_path)
+        subprocess.Popen([package_manager, "run", "dev"])
+        print(f"Vite dev server started in {vite_dir_path}")
+
+    @vite_cli.command("dev")
+    def vite_dev(self):
+        """Run Flask and Vite dev servers together"""
+        # Start Vite in a separate thread
+        vite_thread = threading.Thread(target=self.run_vite_dev)
+        vite_thread.daemon = True
+        vite_thread.start()
+
+        # Give Vite time to start
+        time.sleep(2)
+
+        # Flask server will continue running in the main thread
+        print("Flask server running with Vite integration")
+
+    @vite_cli.command("build")
+    def vite_build(self):
+        """Build Vite assets for production"""
+        vite_dir = self.app.config.get("VITE_DIR", "react")
+        vite_dir_path = os.path.join(self.app.root_path, vite_dir)
+
+        # Determine package manager
+        package_manager = "npm"
+        if os.path.exists(os.path.join(vite_dir_path, "pnpm-lock.yaml")):
+            package_manager = "pnpm"
+        elif os.path.exists(os.path.join(vite_dir_path, "yarn.lock")):
+            package_manager = "yarn"
+
+        # Run build
+        os.chdir(vite_dir_path)
+        subprocess.run([package_manager, "run", "build"], check=True)
+        print(f"Vite assets built successfully in {vite_dir_path}")
 
 
 # Example usage of flash messages helper

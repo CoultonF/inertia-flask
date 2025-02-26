@@ -13,3 +13,4 @@ class Settings:
     VITE_MANIFEST = "manifest.json"
     VITE_SSR_MANIFEST = "manifest.json"
     VITE_STATIC = "static"
+    VITE_DIR = "inertia"

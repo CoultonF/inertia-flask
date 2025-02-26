@@ -29,6 +29,7 @@ app.config["VITE_CLIENT"] = "client"
 app.config["INERTIA_ROOT"] = "app"
 app.config["VITE_SERVER"] = "server"
 app.config["VITE_STATIC"] = "static"
+app.config["VITE_DIR"] = "react"
 app.config["INERTIA_SSR_ENABLED"] = True
 
 inertia_ext.add_shorthand_route("/test", "test")
