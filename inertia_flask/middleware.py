@@ -1,6 +1,8 @@
 import json
+import os
 from typing import Optional, Union
 
+import requests
 from flask import Blueprint, Flask, current_app, request, session, url_for
 from flask.app import App
 from flask.blueprints import BlueprintSetupState
@@ -122,27 +124,37 @@ class Inertia:
     def vite_processor(self):
         flask_debug = current_app.config["DEBUG"]
         vite_origin = current_app.config["VITE_ORIGIN"]
-        vite_client_manifest = current_app.config["VITE_CLIENT_MANIFEST"]
-        vite_client_assets = current_app.config["VITE_CLIENT_ASSETS"]
-        vite_server_manifest = current_app.config["VITE_SERVER_MANIFEST"]
         vite_static = current_app.config["VITE_STATIC"]
+        vite_client = current_app.config["VITE_CLIENT"]
+        vite_static = current_app.config["VITE_STATIC"]
+        vite_manifest = current_app.config["VITE_MANIFEST"]
         is_debug = flask_debug is True
+        ssr_enabled = current_app.config["INERTIA_SSR_ENABLED"]
+        if ssr_enabled and is_debug:
+            is_debug = True
 
-        def dev_asset(file_path, _):
+        def dev_asset(file_path, _=None):
             return f"{vite_origin}/{file_path}"
 
-        def prod_asset(file_path, manifest_path):
+        def prod_asset(file_path, manifest_path=None):
             manifest = {}
+            manifest_path = os.path.join(
+                self.app.root_path,
+                vite_static,
+                vite_client,
+                vite_manifest
+                )
+
             try:
                 with open(
-                    f"{current_app.root_path}/{vite_client_manifest}", encoding="utf-8"
+                    f"{manifest_path}", encoding="utf-8"
                 ) as content:
                     manifest = json.load(content)
                     url_path = manifest[file_path]["file"]
-                return url_for(vite_static, filename=url_path)
+                return url_for(vite_static, filename=f"{vite_client}/{url_path}")
             except OSError as exception:
                 raise OSError(
-                    f"Manifest file not found at {manifest_filepath}. Run `npm run build`."
+                    f"Manifest file not found. Run `npm run build`."
                 ) from exception
 
         def vite_react_refresh():
@@ -161,7 +173,7 @@ class Inertia:
                 <script type="module" src="{vite_origin}/@vite/client"></script>
             """
 
-        def vite_inertia(entry_file, manifest_path):
+        def vite_inertia(entry_file, manifest_path=None):
             output = ""
             if is_debug:
                 output += vite_react_refresh()

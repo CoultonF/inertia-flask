@@ -3,15 +3,8 @@ from functools import wraps
 from http import HTTPStatus
 
 import requests
-from flask import (
-    Response,
-    current_app,
-    has_app_context,
-    render_template,
-    render_template_string,
-    request,
-    session,
-)
+from flask import (Response, current_app, has_app_context, render_template,
+                   render_template_string, request, session)
 from markupsafe import Markup
 
 from .helpers import deep_transform_callables, validate_type
@@ -132,9 +125,8 @@ class BaseInertiaResponseMixin:
         ]
 
     def build_first_load(self, data):
-        if current_app.config["INERTIA_SSR_ENABLED"]:
+        if current_app.config["INERTIA_SSR_ENABLED"] and current_app.config["DEBUG"] is False:
             try:
-                # https://github.com/inertiajs/inertia/blob/master/packages/core/src/server.ts
                 response = requests.post(
                     f"{current_app.config['INERTIA_SSR_URL']}/render",
                     data=data,
@@ -150,7 +142,7 @@ class BaseInertiaResponseMixin:
                     **self.template_data,
                 )
             except requests.exceptions.RequestException:
-                current_app.logger.error("Falling back to client-side rendering.")
+                current_app.logger.error("SSR Server not found. Falling back to client-side rendering.")
         inertia_div = Markup(
             render_template_string(
                 f"""<div id="{current_app.config.get("INERTIA_ROOT", INERTIA_ROOT)}" data-page="{{{{ page|escape }}}}"></div>""",

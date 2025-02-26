@@ -25,7 +25,10 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///demo.db"
 db.init_app(app)
 csrf.init_app(app)
 inertia_ext.init_app(app)
-app.config["VITE_DIST"] = "react/dist"
+app.config["VITE_CLIENT"] = "client"
+app.config["INERTIA_ROOT"] = "app"
+app.config["VITE_SERVER"] = "server"
+app.config["VITE_STATIC"] = "static"
 app.config["INERTIA_SSR_ENABLED"] = True
 
 inertia_ext.add_shorthand_route("/test", "test")
@@ -80,7 +83,7 @@ def hello_world():
 
 def main():
     init_db()
-    app.run(debug=False)
+    app.run(debug=True)
 
 
 if __name__ == "__main__":
