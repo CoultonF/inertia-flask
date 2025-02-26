@@ -1363,7 +1363,6 @@ function requireGetIntrinsic() {
     "%eval%": eval,
     // eslint-disable-line no-eval
     "%EvalError%": $EvalError,
-    "%Float16Array%": typeof Float16Array === "undefined" ? undefined$1 : Float16Array,
     "%Float32Array%": typeof Float32Array === "undefined" ? undefined$1 : Float32Array,
     "%Float64Array%": typeof Float64Array === "undefined" ? undefined$1 : Float64Array,
     "%FinalizationRegistry%": typeof FinalizationRegistry === "undefined" ? undefined$1 : FinalizationRegistry,
@@ -18784,7 +18783,12 @@ ae({
     return pages[`./Pages/${name}.tsx`];
   },
   setup({ el, App, props }) {
-    clientExports.hydrateRoot(el, /* @__PURE__ */ jsxRuntimeExports.jsx(App, { ...props }));
-  },
-  id: "app"
+    if (el.hasChildNodes()) {
+      console.log("hydrating");
+      clientExports.hydrateRoot(el, /* @__PURE__ */ jsxRuntimeExports.jsx(App, { ...props }));
+    } else {
+      console.log("rendering");
+      clientExports.createRoot(el).render(/* @__PURE__ */ jsxRuntimeExports.jsx(App, { ...props }));
+    }
+  }
 });
