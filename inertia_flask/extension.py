@@ -21,19 +21,17 @@ class Inertia:
             self.init_app(app)
 
     def init_app(self, app, encrypt=False):
-        app.config.from_object(Settings)
         self.app = app
         self.encrypt = encrypt
-        cli = InertiaCommands(self)
         if isinstance(app, Flask):
+            cli = InertiaCommands(self)
+            app.config.from_object(Settings)
             self._init_extension(app)
             cli.register_as_flask(app)
         elif isinstance(app, Blueprint):
             blueprint = app
             # Register the extension once the blueprint is registered
             blueprint.record_once(self.register_blueprint)
-            # Register CLI commands with the Blueprint
-            cli.register_as_blueprint(blueprint)
         if encrypt:
             app.before_request(lambda: encrypt_history(encrypt))
         app.context_processor(self.vite_processor)
@@ -41,7 +39,10 @@ class Inertia:
         app.after_request(self.after_request)
 
     def register_blueprint(self, state: BlueprintSetupState):
+        state.app.config.from_object(Settings)
+        cli = InertiaCommands(self, state.app)
         self._init_extension(state.app)
+        cli.register_as_blueprint(self.app)
 
     def _init_extension(self, app: App):
         """Store a reference to the extension in the app's extensions."""

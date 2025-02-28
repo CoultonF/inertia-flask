@@ -8,8 +8,9 @@ from flask.cli import AppGroup
 
 
 class InertiaCommands:
-    def __init__(self, inertia_instance):
+    def __init__(self, inertia_instance, app=None):
         self.inertia = inertia_instance
+        self.app = app or inertia_instance.app
 
     def register_as_flask(self, app: Flask):
         """Register CLI commands with the Flask app"""
@@ -39,27 +40,32 @@ class InertiaCommands:
     def register_as_blueprint(self, blueprint: Blueprint):
         """Register CLI commands with the Blueprint"""
 
+        # Create a command group
+        vite_group = AppGroup("vite", help="Vite integration commands")
+
         # Add the build command
-        @blueprint.cli.command("vite build")
+        @vite_group.command("build")
         def vite_build_command():
             """Build Vite assets for production"""
             self._vite_build()
 
         # Add the dev command
-        @blueprint.cli.command("vite dev")
+        @vite_group.command("dev")
         def vite_dev_command():
             """Run Flask and Vite dev servers together"""
             self._vite_dev()
 
-        @blueprint.cli.command("vite install")
+        @vite_group.command("install")
         def vite_install_command():
             """Install Vite dependencies"""
             self._vite_install()
 
+        blueprint.cli.add_command(vite_group)
+
     def _run_vite_dev(self):
         """Run Vite dev server in a separate thread"""
-        vite_dir = self.inertia.app.config.get("VITE_DIR")
-        vite_dir_path = os.path.join(self.inertia.app.root_path, vite_dir)
+        vite_dir = self.app.config.get("VITE_DIR")
+        vite_dir_path = os.path.join(self.app.app.root_path, vite_dir)
 
         # Check if package.json exists
         if not os.path.exists(os.path.join(vite_dir_path, "package.json")):
@@ -93,8 +99,8 @@ class InertiaCommands:
 
     def _vite_build(self):
         """Build Vite assets for production"""
-        vite_dir = self.inertia.app.config.get("VITE_DIR", "react")
-        vite_dir_path = os.path.join(self.inertia.app.root_path, vite_dir)
+        vite_dir = self.app.config.get("VITE_DIR", "react")
+        vite_dir_path = os.path.join(self.app.root_path, vite_dir)
 
         # Determine package manager
         package_manager = "npm"
@@ -112,8 +118,8 @@ class InertiaCommands:
 
     def _vite_install(self):
         """Install Vite dependencies"""
-        vite_dir = self.inertia.app.config.get("VITE_DIR", "react")
-        vite_dir_path = os.path.join(self.inertia.app.root_path, vite_dir)
+        vite_dir = self.app.config.get("VITE_DIR", "react")
+        vite_dir_path = os.path.join(self.app.root_path, vite_dir)
         # Determine package manager
         package_manager = "npm"
         if os.path.exists(os.path.join(vite_dir_path, "pnpm-lock.yaml")):
