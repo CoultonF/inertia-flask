@@ -1,17 +1,14 @@
 import json
 import os
-import subprocess
-import threading
-import time
 from typing import Optional, Union
 
 import requests
 from flask import Blueprint, Flask, current_app, request, session, url_for
 from flask.app import App
 from flask.blueprints import BlueprintSetupState
-from flask.cli import AppGroup
 from werkzeug.wrappers import Response
 
+from .cli import InertiaCommands
 from .http import encrypt_history, render
 from .settings import Settings
 from .version import get_asset_version
@@ -27,65 +24,21 @@ class Inertia:
         app.config.from_object(Settings)
         self.app = app
         self.encrypt = encrypt
+        cli = InertiaCommands(self)
         if isinstance(app, Flask):
             self._init_extension(app)
-            self._register_flask_cli_commands(app)
+            cli.register_as_flask(app)
         elif isinstance(app, Blueprint):
             blueprint = app
             # Register the extension once the blueprint is registered
             blueprint.record_once(self.register_blueprint)
             # Register CLI commands with the Blueprint
-            self._register_blueprint_cli_commands(blueprint)
+            cli.register_as_blueprint(blueprint)
         if encrypt:
             app.before_request(lambda: encrypt_history(encrypt))
         app.context_processor(self.vite_processor)
         app.before_request(self.before_request)
         app.after_request(self.after_request)
-
-    def _register_flask_cli_commands(self, app: Flask):
-        """Register CLI commands with the Flask app"""
-        # Create a command group
-        vite_group = AppGroup("vite", help="Vite integration commands")
-
-        # Add the build command
-        @vite_group.command("build")
-        def vite_build_command():
-            """Build Vite assets for production"""
-            self._vite_build()
-
-        # Add the dev command
-        @vite_group.command("dev")
-        def vite_dev_command():
-            """Run Flask and Vite dev servers together"""
-            self._vite_dev()
-
-        @vite_group.command("install")
-        def vite_install_command():
-            """Install Vite dependencies"""
-            self._vite_install()
-
-        # Add the command group to the app
-        app.cli.add_command(vite_group)
-
-    def _register_blueprint_cli_commands(self, blueprint: Blueprint):
-        """Register CLI commands with the Blueprint"""
-
-        # Add the build command
-        @blueprint.cli.command("vite build")
-        def vite_build_command():
-            """Build Vite assets for production"""
-            self._vite_build()
-
-        # Add the dev command
-        @blueprint.cli.command("vite dev")
-        def vite_dev_command():
-            """Run Flask and Vite dev servers together"""
-            self._vite_dev()
-
-        @blueprint.cli.command("vite install")
-        def vite_install_command():
-            """Install Vite dependencies"""
-            self._vite_install()
 
     def register_blueprint(self, state: BlueprintSetupState):
         self._init_extension(state.app)
@@ -292,92 +245,6 @@ class Inertia:
             "vite_is_debug": is_debug,
             "vite_dev_server_running": vite_dev_server_running,
         }
-
-    def _run_vite_dev(self):
-        """Run Vite dev server in a separate thread"""
-        vite_dir = self.app.config.get("VITE_DIR")
-        vite_dir_path = os.path.join(self.app.root_path, vite_dir)
-
-        # Check if package.json exists
-        if not os.path.exists(os.path.join(vite_dir_path, "package.json")):
-            print(f"Error: No package.json found in {vite_dir_path}")
-            return
-
-        # Determine package manager (npm, yarn, pnpm)
-        package_manager = "npm"
-        if os.path.exists(os.path.join(vite_dir_path, "pnpm-lock.yaml")):
-            package_manager = "pnpm"
-        elif os.path.exists(os.path.join(vite_dir_path, "yarn.lock")):
-            package_manager = "yarn"
-
-        # Run Vite dev server
-        os.chdir(vite_dir_path)
-        subprocess.Popen([package_manager, "run", "dev"])
-        print(f"Vite dev server started in {vite_dir_path}")
-
-    def _vite_dev(self):
-        """Run Flask and Vite dev servers together"""
-        # Start Vite in a separate thread
-        vite_thread = threading.Thread(target=self.run_vite_dev)
-        vite_thread.daemon = True
-        vite_thread.start()
-
-        # Give Vite time to start
-        time.sleep(2)
-
-        # Flask server will continue running in the main thread
-        print("Flask server running with Vite integration")
-
-    def _vite_build(self):
-        """Build Vite assets for production"""
-        vite_dir = self.app.config.get("VITE_DIR", "react")
-        vite_dir_path = os.path.join(self.app.root_path, vite_dir)
-
-        # Determine package manager
-        package_manager = "npm"
-        if os.path.exists(os.path.join(vite_dir_path, "pnpm-lock.yaml")):
-            package_manager = "pnpm"
-        elif os.path.exists(os.path.join(vite_dir_path, "yarn.lock")):
-            package_manager = "yarn"
-
-        # Run build
-        os.chdir(vite_dir_path)
-        subprocess.run([package_manager, "run", "build"], check=True)
-        print(f"Vite assets built successfully in {vite_dir_path}")
-
-        # For backward compatibility and direct calling
-
-    def _vite_install(self):
-        """Install Vite dependencies"""
-        vite_dir = self.app.config.get("VITE_DIR", "react")
-        vite_dir_path = os.path.join(self.app.root_path, vite_dir)
-        # Determine package manager
-        package_manager = "npm"
-        if os.path.exists(os.path.join(vite_dir_path, "pnpm-lock.yaml")):
-            package_manager = "pnpm"
-        elif os.path.exists(os.path.join(vite_dir_path, "yarn.lock")):
-            package_manager = "yarn"
-
-        # Run install
-        os.chdir(vite_dir_path)
-        subprocess.run([package_manager, "install"], check=True)
-        print(f"Vite dependencies installed successfully in {vite_dir_path}")
-
-    def vite_build(self):
-        """Build Vite assets for production (for direct calling)"""
-        return self._vite_build()
-
-    def vite_dev(self):
-        """Run Flask and Vite dev servers together (for direct calling)"""
-        return self._vite_dev()
-
-    def vite_install(self):
-        """Install Vite dependencies (for direct calling)"""
-        return self._vite_install()
-
-    def run_vite_dev(self):
-        """Run Vite dev server (for direct calling)"""
-        return self._run_vite_dev()
 
 
 # Example usage of flash messages helper

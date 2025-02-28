@@ -1,3 +1,4 @@
+from .extension import Inertia
 from .http import (
     InertiaResponse,
     clear_history,
@@ -6,7 +7,6 @@ from .http import (
     location,
     render,
 )
-from .middleware import Inertia
 from .utils import defer, lazy, merge, optional
 from .version import get_asset_version as _get_asset_version
 
