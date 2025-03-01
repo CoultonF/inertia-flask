@@ -9,7 +9,7 @@ from flask.blueprints import BlueprintSetupState
 from werkzeug.wrappers import Response
 
 from .cli import InertiaCommands
-from .http import encrypt_history, render
+from .responses import encrypt_history, render
 from .settings import init_settings
 from .version import get_asset_version
 

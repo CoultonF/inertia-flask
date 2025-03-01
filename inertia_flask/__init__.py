@@ -1,5 +1,5 @@
 from .extension import Inertia
-from .http import (
+from .responses import (
     InertiaResponse,
     clear_history,
     encrypt_history,
