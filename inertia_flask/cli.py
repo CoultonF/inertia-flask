@@ -1,10 +1,25 @@
 import os
+import shutil
 import subprocess
 import threading
 import time
 
 from flask import Blueprint, Flask
 from flask.cli import AppGroup
+
+
+def get_package_manager(root_path):
+    """Determine the package manager based on the presence of lock files."""
+    if os.path.exists(os.path.join(root_path, "pnpm-lock.yaml")):
+        return "pnpm"
+    elif os.path.exists(os.path.join(root_path, "yarn.lock")):
+        return "yarn"
+    elif shutil.which("pnpm") is not None:
+        return "pnpm"
+    elif shutil.which("yarn") is not None:
+        return "yarn"
+    else:
+        return "npm"
 
 
 class InertiaCommands:
@@ -73,11 +88,7 @@ class InertiaCommands:
             return
 
         # Determine package manager (npm, yarn, pnpm)
-        package_manager = "npm"
-        if os.path.exists(os.path.join(vite_dir_path, "pnpm-lock.yaml")):
-            package_manager = "pnpm"
-        elif os.path.exists(os.path.join(vite_dir_path, "yarn.lock")):
-            package_manager = "yarn"
+        package_manager = get_package_manager(vite_dir_path)
 
         # Run Vite dev server
         os.chdir(vite_dir_path)
@@ -103,11 +114,7 @@ class InertiaCommands:
         vite_dir_path = os.path.join(self.app.root_path, vite_dir)
 
         # Determine package manager
-        package_manager = "npm"
-        if os.path.exists(os.path.join(vite_dir_path, "pnpm-lock.yaml")):
-            package_manager = "pnpm"
-        elif os.path.exists(os.path.join(vite_dir_path, "yarn.lock")):
-            package_manager = "yarn"
+        package_manager = get_package_manager(vite_dir_path)
 
         # Run build
         os.chdir(vite_dir_path)
@@ -121,11 +128,7 @@ class InertiaCommands:
         vite_dir = self.app.config.get("VITE_DIR", "react")
         vite_dir_path = os.path.join(self.app.root_path, vite_dir)
         # Determine package manager
-        package_manager = "npm"
-        if os.path.exists(os.path.join(vite_dir_path, "pnpm-lock.yaml")):
-            package_manager = "pnpm"
-        elif os.path.exists(os.path.join(vite_dir_path, "yarn.lock")):
-            package_manager = "yarn"
+        package_manager = get_package_manager(vite_dir_path)
 
         # Run install
         os.chdir(vite_dir_path)
