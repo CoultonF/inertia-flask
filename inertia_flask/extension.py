@@ -10,7 +10,7 @@ from werkzeug.wrappers import Response
 
 from .cli import InertiaCommands
 from .http import encrypt_history, render
-from .settings import Settings
+from .settings import init_settings
 from .version import get_asset_version
 
 
@@ -25,7 +25,7 @@ class Inertia:
         self.encrypt = encrypt
         if isinstance(app, Flask):
             cli = InertiaCommands(self)
-            app.config.from_object(Settings)
+            init_settings(app)  # Replace app.config.from_object(Settings)
             self._init_extension(app)
             cli.register_as_flask(app)
         elif isinstance(app, Blueprint):
@@ -39,7 +39,7 @@ class Inertia:
         app.after_request(self.after_request)
 
     def register_blueprint(self, state: BlueprintSetupState):
-        state.app.config.from_object(Settings)
+        init_settings(state.app)  # Replace state.app.config.from_object(Settings)
         cli = InertiaCommands(self, state.app)
         self._init_extension(state.app)
         cli.register_as_blueprint(self.app)

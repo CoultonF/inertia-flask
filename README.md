@@ -10,11 +10,34 @@ The Inertia.js Flask Adapter allows you to seamlessly integrate Inertia.js with 
 
 ## Installation
 
-To install the Flask Inertia adapter, use pip:
+ource## Using uv (recommended)
 
+1. Install uv:
 ```bash
-pip install inertia-flask
+pip install uv
 ```
+
+2. Create and activate virtual environment:
+```bash
+uv venv
+source .venv/bin/activate  # Unix/macOS
+# or
+.venv\Scripts\activate  # Windows
+```
+
+3. Install dependencies:
+```bash
+uv pip install -r requirements.txt
+```
+
+4. For development:
+```bash
+uv pip install -r requirements-dev.txt
+```
+
+5. For testing:
+```bash
+uv pip install -r requirements-test.txt
 
 ## Configuration
 You can initialize inertia-flask like most other extensions in Flask.
@@ -120,6 +143,46 @@ To contribute to the development of this extension, follow these steps:
     poetry run pytest
     ```
 
+## Testing
+
+### Running Tests
+
+1. Install test dependencies:
+```bash
+uv pip install -r requirements-test.txt
+```
+
+2. Run tests using the test script:
+```bash
+./scripts/test.sh
+```
+
+### Test Options
+
+- Run specific test file:
+```bash
+./scripts/test.sh tests/test_inertia.py
+```
+
+- Run tests with specific marker:
+```bash
+./scripts/test.sh -m "integration"
+```
+
+- Run tests with output:
+```bash
+./scripts/test.sh -v
+```
+
+### Coverage Report
+
+The test script automatically generates a coverage report. To generate an HTML coverage report:
+
+```bash
+./scripts/test.sh --cov-report=html
+```
+
+The report will be available in the `htmlcov` directory.
 
 ## Thank you
 

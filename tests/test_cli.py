@@ -1,0 +1,2 @@
+class TestCLI:
+    pass
