@@ -4,7 +4,8 @@ import os
 from flask import current_app, request
 
 
-def get_asset_version() -> str:
+def get_asset_version(blueprint=None) -> str:
+    # TODO make compatible with blueprints
     """Calculate asset version to allow Inertia to automatically make a full page visit in case of changes."""
     template_folder = current_app.template_folder
     root_path = current_app.root_path

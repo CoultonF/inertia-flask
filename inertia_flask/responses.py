@@ -12,6 +12,7 @@ from flask import (
     request,
     session,
 )
+from jinja2.exceptions import TemplateNotFound
 from markupsafe import Markup
 
 from .helpers import deep_transform_callables, validate_type
@@ -131,7 +132,7 @@ class BaseInertiaResponseMixin:
             )
         ]
 
-    def build_first_load(self, data):
+    def build_first_load(self, data, blueprint=None):
         if (
             current_app.config["INERTIA_SSR_ENABLED"]
             and current_app.config["DEBUG"] is False
@@ -161,8 +162,19 @@ class BaseInertiaResponseMixin:
                 page=data,
             )
         )
+        template_path = current_app.config.get(
+            f"{str(blueprint) + '_' if blueprint is not None else ''}INERTIA_TEMPLATE",
+            INERTIA_TEMPLATE,
+        )
+        try:
+            current_app.jinja_env.get_template(template_path)
+        except TemplateNotFound:
+            template_path = current_app.config.get("INERTIA_TEMPLATE", INERTIA_TEMPLATE)
+            current_app.logger.warning(
+                f"Blueprint template not found: {template_path}\nUsing global template."
+            )
         return render_template(
-            current_app.config.get("INERTIA_TEMPLATE", INERTIA_TEMPLATE),
+            template_path,
             page=data,
             inertia=inertia_div,
             **self.template_data,
@@ -198,7 +210,7 @@ class InertiaResponse(BaseInertiaResponseMixin, Response):
             }
             content = data
         else:
-            content = self.build_first_load(data)
+            content = self.build_first_load(data, request.blueprint.upper())
 
         super().__init__(content, headers=_headers, *args, **kwargs)
 
