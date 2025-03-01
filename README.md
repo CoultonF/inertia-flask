@@ -10,7 +10,7 @@ The Inertia.js Flask Adapter allows you to seamlessly integrate Inertia.js with 
 
 ## Installation
 
-ource## Using uv (recommended)
+## Using uv (recommended)
 
 1. Install uv:
 ```bash
@@ -27,6 +27,7 @@ source .venv/bin/activate  # Unix/macOS
 
 3. Install dependencies:
 ```bash
+uv pip install -e .
 uv pip install -r requirements.txt
 ```
 

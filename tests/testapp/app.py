@@ -3,6 +3,16 @@ from time import sleep
 from flask import Flask
 
 from inertia_flask import Inertia, clear_history, defer, encrypt_history, inertia, merge
+from tests.testapp.blueprint.bp import bp
+
+
+def create_blueprint():
+    app = Flask(__name__)
+    app.config["TESTING"] = True  # Enable testing mode
+    app.config["SECRET_KEY"] = "your-secret-key"  # Required for session
+    app.config["INERTIA_TEMPLATE"] = "blueprint.html"
+    app.register_blueprint(bp)
+    return app
 
 
 def create_app():
@@ -89,5 +99,10 @@ def run_app():
     app.run(debug=True)
 
 
+def run_blueprint():
+    app = create_blueprint()
+    app.run(debug=True)
+
+
 if __name__ == "__main__":
-    run_app()
+    run_blueprint()
