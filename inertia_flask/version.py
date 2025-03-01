@@ -1,7 +1,7 @@
 import hashlib
 import os
 
-from flask import current_app, request
+from flask import current_app
 
 
 def get_asset_version(blueprint=None) -> str:
@@ -9,11 +9,9 @@ def get_asset_version(blueprint=None) -> str:
     """Calculate asset version to allow Inertia to automatically make a full page visit in case of changes."""
     template_folder = current_app.template_folder
     root_path = current_app.root_path
-    if request.blueprint is not None:
-        blueprint = current_app.blueprints[request.blueprint]
-        if blueprint.template_folder is not None:
-            template_folder = blueprint.template_folder
-            root_path = blueprint.root_path
+    if blueprint is not None:
+        template_folder = current_app[blueprint].template_folder
+        root_path = current_app[blueprint].root_path
 
     template_path = os.path.join(
         root_path,

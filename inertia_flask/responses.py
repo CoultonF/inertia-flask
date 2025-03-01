@@ -210,7 +210,7 @@ class InertiaResponse(BaseInertiaResponseMixin, Response):
             }
             content = data
         else:
-            content = self.build_first_load(data, request.blueprint.upper())
+            content = self.build_first_load(data, request.blueprint or None)
 
         super().__init__(content, headers=_headers, *args, **kwargs)
 
