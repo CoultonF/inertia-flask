@@ -97,6 +97,63 @@ axios.defaults.xsrfCookieName = "_csrf_token";
 ```
 This ensures that Axios automatically includes the CSRF token in requests, aligning with Seasurf's protection mechanism.
 
+## Configuration Options
+
+The following configuration options can be set in your Flask application's config:
+
+### Core Settings
+
+- `INERTIA_TEMPLATE` (required): The base template used for rendering Inertia pages
+- `INERTIA_JSON_ENCODER`: Custom JSON encoder for serializing data (default: `InertiaJsonEncoder`)
+- `INERTIA_ENCRYPT_HISTORY`: Enable encryption of Inertia history state (default: `False`)
+
+### Server-Side Rendering (SSR)
+
+- `INERTIA_SSR_ENABLED`: Enable server-side rendering support (default: `False`)
+- `INERTIA_SSR_URL`: URL where the SSR server is running (default: `"http://localhost:13714"`)
+
+### Vite Integration
+
+- `INERTIA_VITE_DIR`: Directory containing your Vite/frontend project (default: `"inertia"`)
+- `INERTIA_VITE_ORIGIN`: URL where Vite dev server runs (default: `"http://localhost:5173"`)
+- `INERTIA_ROOT`: Root element ID for mounting the Inertia app (default: `"app"`)
+
+#### Asset Organization
+
+- `INERTIA_VITE_STATIC`: Directory for static assets (default: `"static"`)
+- `INERTIA_VITE_CLIENT`: Subdirectory for client-side assets (default: `"client"`)
+- `INERTIA_VITE_SERVER`: Subdirectory for server-side assets (default: `"server"`)
+
+#### Manifest Files
+
+- `INERTIA_VITE_MANIFEST`: Client-side manifest filename (default: `"manifest.json"`)
+- `INERTIA_VITE_SSR_MANIFEST`: Server-side manifest filename (default: `"manifest.json"`)
+
+### Example Configuration
+
+```python
+app.config.update(
+    INERTIA_TEMPLATE="base.html",
+    INERTIA_SSR_ENABLED=True,
+    INERTIA_VITE_DIR="frontend",
+    INERTIA_ROOT="app",
+    # Custom JSON encoder for special serialization needs
+    INERTIA_JSON_ENCODER=MyCustomJsonEncoder
+)
+```
+
+For blueprint-specific configuration, use prefixes:
+
+```python
+app.config.update(
+    # Global settings
+    INERTIA_TEMPLATE="base.html",
+    # Blueprint-specific settings
+    BP_INERTIA_TEMPLATE="blueprint.html",
+    BP_INERTIA_VITE_DIR="bp_frontend"
+)
+```
+
 ## Use
 
 ###

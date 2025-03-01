@@ -129,10 +129,12 @@ class Inertia:
 
     def vite_processor(self):
         flask_debug = current_app.config.get("DEBUG", False)
-        vite_origin = current_app.config.get("VITE_ORIGIN", "http://localhost:5173")
-        vite_static = current_app.config.get("VITE_STATIC", "static")
-        vite_client = current_app.config.get("VITE_CLIENT", "client")
-        vite_manifest = current_app.config.get("VITE_MANIFEST", "manifest.json")
+        vite_origin = current_app.config.get(
+            "INERTIA_VITE_ORIGIN", "http://localhost:5173"
+        )
+        vite_static = current_app.config.get("INERTIA_VITE_STATIC", "static")
+        vite_client = current_app.config.get("INERTIA_VITE_CLIENT", "client")
+        vite_manifest = current_app.config.get("INERTIA_VITE_MANIFEST", "manifest.json")
         is_debug = flask_debug is True
         ssr_enabled = current_app.config.get("INERTIA_SSR_ENABLED", False)
 

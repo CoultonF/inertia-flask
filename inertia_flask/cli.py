@@ -79,7 +79,7 @@ class InertiaCommands:
 
     def _run_vite_dev(self):
         """Run Vite dev server in a separate thread"""
-        vite_dir = self.app.config.get("VITE_DIR")
+        vite_dir = self.app.config.get("INERTIA_VITE_DIR")
         vite_dir_path = os.path.join(self.app.app.root_path, vite_dir)
 
         # Check if package.json exists
@@ -110,7 +110,7 @@ class InertiaCommands:
 
     def _vite_build(self):
         """Build Vite assets for production"""
-        vite_dir = self.app.config.get("VITE_DIR", "react")
+        vite_dir = self.app.config.get("INERTIA_VITE_DIR", "react")
         vite_dir_path = os.path.join(self.app.root_path, vite_dir)
 
         # Determine package manager
@@ -125,7 +125,7 @@ class InertiaCommands:
 
     def _vite_install(self):
         """Install Vite dependencies"""
-        vite_dir = self.app.config.get("VITE_DIR", "react")
+        vite_dir = self.app.config.get("INERTIA_VITE_DIR", "react")
         vite_dir_path = os.path.join(self.app.root_path, vite_dir)
         # Determine package manager
         package_manager = get_package_manager(vite_dir_path)
