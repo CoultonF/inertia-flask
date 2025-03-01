@@ -122,7 +122,7 @@ The following configuration options can be set in your Flask application's confi
 
 - `INERTIA_VITE_STATIC`: Directory for static assets (default: `"static"`)
 - `INERTIA_VITE_CLIENT`: Subdirectory for client-side assets (default: `"client"`)
-- `INERTIA_VITE_SERVER`: Subdirectory for server-side assets (default: `"server"`)
+- `INERTIA_VITE_SERVER`: Subdirectory for server-side assets when using ssr (default: `"server"`)
 
 #### Manifest Files
 
