@@ -80,9 +80,13 @@ class Inertia:
         return response.status_code in [301, 302]
 
     def is_stale(self):
-        return (
-            request.headers.get("X-Inertia-Version", get_asset_version())
-            != get_asset_version()
+        return request.headers.get(
+            "X-Inertia-Version",
+            get_asset_version(
+                self.app.name if isinstance(self.app, Blueprint) else None
+            ),
+        ) != get_asset_version(
+            self.app.name if isinstance(self.app, Blueprint) else None
         )
 
     def is_stale_inertia_get(self):

@@ -3,9 +3,11 @@ from datetime import datetime
 from flask import Flask
 from flask_seasurf import SeaSurf
 from flask_sqlalchemy import SQLAlchemy
-from my_blueprint import bp
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+from examples.blueprint.blueprints.my_blueprint import bp
+from inertia_flask import inertia
 
 
 class Base(DeclarativeBase):
@@ -20,18 +22,20 @@ app.secret_key = "your-secret-key"  # Required for session
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///demo.db"
 db.init_app(app)
 csrf.init_app(app)
-app.config["INERTIA_VITE_CLIENT"] = "client"
+app.config["VITE_CLIENT"] = "client"
 app.config["INERTIA_ROOT"] = "app"
-app.config["INERTIA_VITE_SERVER"] = "server"
-app.config["INERTIA_VITE_STATIC"] = "static"
-app.config["INERTIA_VITE_DIR"] = "react"
+app.config["INERTIA_TEMPLATE"] = "base.html"
+app.config["BP_INERTIA_TEMPLATE"] = "blueprint.html"
+app.config["VITE_SERVER"] = "server"
+app.config["VITE_STATIC"] = "static"
+app.config["VITE_DIR"] = "react"
 
 
 class PostModel(BaseModel):
     post_id: int
     title: str
     content: str
-    created_at: datetime
+    reated_at: datetime
     model_config: ConfigDict = ConfigDict(from_attributes=True)
 
 
@@ -62,6 +66,12 @@ def init_db():
 @app.route("/")
 def hello_world():
     return "Hello from Flask!"
+
+
+@app.route("/nobp")
+@inertia("component")
+def test_route():
+    return {"data": 1}
 
 
 def main():

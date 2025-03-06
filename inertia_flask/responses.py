@@ -21,7 +21,6 @@ from .version import get_asset_version
 
 INERTIA_REQUEST_ENCRYPT_HISTORY = "_inertia_encrypt_history"
 INERTIA_SESSION_CLEAR_HISTORY = "_inertia_clear_history"
-INERTIA_TEMPLATE = "inertia.html"
 INERTIA_SSR_TEMPLATE = "inertia.html"
 INERTIA_ROOT = "app"
 
@@ -79,7 +78,7 @@ class BaseInertiaResponseMixin:
             "component": self.component,
             "props": self.build_props(),
             "url": self.request.get_full_path(),
-            "version": get_asset_version(),
+            "version": get_asset_version(self.request.flask_request.blueprint),
             "encryptHistory": self.request.should_encrypt_history(),
             "clearHistory": clear_history,
         }
@@ -163,15 +162,14 @@ class BaseInertiaResponseMixin:
             )
         )
         template_path = current_app.config.get(
-            f"{str(blueprint) + '_' if blueprint is not None else ''}INERTIA_TEMPLATE",
-            INERTIA_TEMPLATE,
+            f"{str(blueprint).upper() + '_' if blueprint is not None else ''}INERTIA_TEMPLATE"
         )
         try:
             current_app.jinja_env.get_template(template_path)
         except TemplateNotFound:
-            template_path = current_app.config.get("INERTIA_TEMPLATE", INERTIA_TEMPLATE)
+            template_path = current_app.config.get("INERTIA_TEMPLATE")
             current_app.logger.warning(
-                f"Blueprint template not found: {template_path}\nUsing global template."
+                f"Blueprint template not found: {template_path}. Using global template."
             )
         return render_template(
             template_path,

@@ -1,24 +1,21 @@
 import hashlib
-import os
 
 from flask import current_app
 
+from .utils import get_template_name
+
 
 def get_asset_version(blueprint=None) -> str:
-    # TODO make compatible with blueprints
     """Calculate asset version to allow Inertia to automatically make a full page visit in case of changes."""
-    template_folder = current_app.template_folder
-    root_path = current_app.root_path
-    if blueprint is not None:
-        template_folder = current_app[blueprint].template_folder
-        root_path = current_app[blueprint].root_path
-
-    template_path = os.path.join(
-        root_path,
-        template_folder,
-        current_app.config["INERTIA_TEMPLATE"],
+    blueprint_class = (
+        current_app.blueprints[blueprint] if blueprint is not None else None
     )
-    with open(template_path, "rb") as template_file:
-        bytes_content = template_file.read()
-
-    return hashlib.sha256(bytes_content).hexdigest()
+    template_name = get_template_name(blueprint_class)
+    template = current_app.jinja_env.get_template(template_name)
+    try:
+        # Get the raw template source without rendering
+        template_bytes = template.source.encode("utf-8")
+        return hashlib.sha256(template_bytes).hexdigest()
+    except Exception as e:
+        current_app.logger.error(f"Failed to get template bytes: {e}")
+        return ""

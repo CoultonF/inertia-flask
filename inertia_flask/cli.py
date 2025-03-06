@@ -80,7 +80,7 @@ class InertiaCommands:
     def _run_vite_dev(self):
         """Run Vite dev server in a separate thread"""
         vite_dir = self.app.config.get("INERTIA_VITE_DIR")
-        vite_dir_path = os.path.join(self.app.app.root_path, vite_dir)
+        vite_dir_path = os.path.join(self.app.root_path, vite_dir)
 
         # Check if package.json exists
         if not os.path.exists(os.path.join(vite_dir_path, "package.json")):
@@ -150,3 +150,8 @@ class InertiaCommands:
     def run_vite_dev(self):
         """Run Vite dev server (for direct calling)"""
         return self._run_vite_dev()
+
+    def get_package_manager(self):
+        vite_dir = self.app.config.get("INERTIA_VITE_DIR")
+        vite_dir_path = os.path.join(self.app.root_path, vite_dir)
+        return get_package_manager(vite_dir_path)
