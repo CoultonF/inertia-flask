@@ -7,7 +7,7 @@ inertia_ext = Inertia()
 inertia_ext.init_app(bp)
 
 
-@bp.route("/bp")
+@bp.route("/blueprint")
 @inertia("component")
 def bp_page():
     return {"page": "blueprint"}

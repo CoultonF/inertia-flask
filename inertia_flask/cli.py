@@ -23,6 +23,18 @@ def get_package_manager(root_path):
 
 
 class InertiaCommands:
+    """
+    Command line utilities to interface with Inertia
+
+    Vite commands:
+
+    - `flask vite build`: builds vite bundle to create static assets
+    - `flask vite dev`: create a dev server to utilize HMR
+    - `flask vite install`: install dependencies according to package manager
+
+    The vite commands prefer pnpm, then yarn, then npm. pnpm is recommended.
+    """
+
     def __init__(self, inertia_instance, app=None):
         self.inertia = inertia_instance
         self.app = app or inertia_instance.app
@@ -152,6 +164,7 @@ class InertiaCommands:
         return self._run_vite_dev()
 
     def get_package_manager(self):
+        """Get the package manager used for the cli. Used for testing purposes."""
         vite_dir = self.app.config.get("INERTIA_VITE_DIR")
         vite_dir_path = os.path.join(self.app.root_path, vite_dir)
         return get_package_manager(vite_dir_path)

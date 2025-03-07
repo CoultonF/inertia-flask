@@ -21,7 +21,8 @@ def create_app():
     app.config["TESTING"] = True  # Enable testing mode
     app.config["SECRET_KEY"] = "your-secret-key"  # Required for session
     app.config["INERTIA_TEMPLATE"] = "base.html"
-    app.config["BP_INERTIA_TEMPLATE"] = "fail.html"
+    app.config["BP_INERTIA_TEMPLATE"] = "blueprint.html"
+    app.register_blueprint(bp)
     inertia_ext.init_app(app)
 
     # Register routes

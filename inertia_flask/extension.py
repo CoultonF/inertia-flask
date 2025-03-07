@@ -1,3 +1,5 @@
+"""The flask inertia extension"""
+
 import json
 import os
 from typing import Optional, Union
@@ -15,12 +17,18 @@ from .version import get_asset_version
 
 
 class Inertia:
+    """
+    Flask Inertia is an extension on Flask that enables the Inertia.js protocol.
+    """
+
     def __init__(self, app: Optional[Union[Flask, Blueprint]] = None):
         self.app = None
         if app is not None:
             self.init_app(app)
 
     def init_app(self, app, encrypt=False):
+        """Call this function with the app instance
+        to initilize Inertia extension in flask"""
         self.app = app
         self.encrypt = encrypt
         if isinstance(app, Flask):
@@ -39,6 +47,7 @@ class Inertia:
         app.after_request(self.after_request)
 
     def register_blueprint(self, state: BlueprintSetupState):
+        """Register a blueprint with the app"""
         init_settings(state.app)  # Replace state.app.config.from_object(Settings)
         cli = InertiaCommands(self, state.app)
         self._init_extension(state.app)
@@ -51,10 +60,12 @@ class Inertia:
         app.extensions["inertia"] = self
 
     def before_request(self):
+        """Before middleware"""
         if self.encrypt:
             encrypt_history(self.encrypt)
 
     def after_request(self, response):
+        """After middleware"""
         if not self.is_inertia_request():
             return response
 
@@ -67,6 +78,7 @@ class Inertia:
         return response
 
     def is_non_post_redirect(self, response):
+        """Utility function to determine if the request is a POST-like redirect"""
         return self.is_redirect_request(response) and request.method in [
             "PUT",
             "PATCH",
@@ -74,12 +86,15 @@ class Inertia:
         ]
 
     def is_inertia_request(self):
+        "Check that the request has the X-Inertia header"
         return "X-Inertia" in request.headers
 
     def is_redirect_request(self, response):
+        "If we are redirecting, update the status code"
         return response.status_code in [301, 302]
 
     def is_stale(self):
+        "Will return true if the html document does not match what the client has."
         return request.headers.get(
             "X-Inertia-Version",
             get_asset_version(
@@ -90,9 +105,11 @@ class Inertia:
         )
 
     def is_stale_inertia_get(self):
+        "Check that the request is GET and stale html document"
         return request.method == "GET" and self.is_stale()
 
     def force_refresh(self):
+        "Force the client to refresh the html document"
         # Store flash messages for the next request
         if "messages" in session:
             session["_messages"] = session["messages"]
@@ -109,7 +126,7 @@ class Inertia:
     ) -> None:
         """Connect a URL rule to a frontend component that does not need a controller.
 
-        This url does not have dedicated python source code but is linked to a JS component,
+        This url does not have dedicated python code but is linked to a JS component,
         (i.e. a frontend component which does not need props nor view_data).
 
         :param url: The URL rule as string as used in ``flask.add_url_rule``
@@ -132,6 +149,7 @@ class Inertia:
         )
 
     def vite_processor(self):
+        "Attach Vite templates to the jinja2 templating language for flask"
         flask_debug = current_app.config.get("DEBUG", False)
         vite_origin = current_app.config.get(
             "INERTIA_VITE_ORIGIN", "http://localhost:5173"
@@ -140,7 +158,6 @@ class Inertia:
         vite_client = current_app.config.get("INERTIA_VITE_CLIENT", "client")
         vite_manifest = current_app.config.get("INERTIA_VITE_MANIFEST", "manifest.json")
         is_debug = flask_debug is True
-        ssr_enabled = current_app.config.get("INERTIA_SSR_ENABLED", False)
 
         # Detect if Vite dev server is running
         vite_dev_server_running = False
@@ -148,7 +165,7 @@ class Inertia:
             try:
                 response = requests.get(f"{vite_origin}/@vite/client", timeout=0.1)
                 vite_dev_server_running = response.status_code == 200
-            except:
+            except requests.Timeout:
                 vite_dev_server_running = False
 
         def dev_asset(file_path, _=None):
@@ -222,18 +239,22 @@ class Inertia:
                         manifest = json.load(content)
                         if entry_file in manifest and "css" in manifest[entry_file]:
                             css_files = manifest[entry_file]["css"]
-                except:
+                except FileNotFoundError:
                     pass
 
                 # Include CSS files
                 for css_file in css_files:
                     output += f"""
-                    <link rel="stylesheet" href="{url_for(vite_static, filename=f"{vite_client}/{css_file}")}">
+                    <link
+                    rel="stylesheet"
+                    href="{url_for(vite_static, filename=f"{vite_client}/{css_file}")}">
                     """
 
                 # Include JS
                 output += f"""
-                <script type="module" src="{prod_asset(entry_file, manifest_path)}"></script>
+                <script
+                type="module"
+                src="{prod_asset(entry_file, manifest_path)}"></script>
                 """
 
             return output

@@ -36,6 +36,13 @@ class TestInertia:
         data_page = inertia_div["data-page"]
         return json.loads(data_page)
 
+    def parse_page_title(self, response):
+        soup = BeautifulSoup(response.data, "html.parser")
+        title = soup.find("title")
+        if title is None:
+            return ""
+        return title.text
+
     def inertia_headers(self, app):
         return {
             "X-Inertia": "true",

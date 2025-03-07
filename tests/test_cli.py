@@ -3,15 +3,17 @@ from unittest.mock import patch
 
 import pytest
 from flask import Flask
-from flask.cli import ScriptInfo
 
 from inertia_flask import Inertia
 from inertia_flask.cli import InertiaCommands
 
 
 class TestCLI:
+    """Command line interface tests for inertia flask"""
+
     @pytest.fixture
     def app(self):
+        """define an app and attach inertia commands"""
         app = Flask(__name__)
         app.config["INERTIA_VITE_DIR"] = "react"
         inertia = Inertia(app)
@@ -19,13 +21,13 @@ class TestCLI:
         commands.register_as_flask(app)
         return app
 
-    @pytest.fixture
-    def script_info(self, app):
-        return ScriptInfo(create_app=lambda info: app)
-
-    def test_vite_build_command(self, app, script_info):
+    def test_vite_build_command(self, app, tmp_path):
+        """Test to ensure `flask vite build` is implemented"""
         with patch("subprocess.run") as mock_run:
             # Create a runner and invoke the command
+            vite_dir = tmp_path / "react"
+            vite_dir.mkdir()
+            app.config["INERTIA_VITE_DIR"] = str(vite_dir)
             runner = app.test_cli_runner()
             result = runner.invoke(args=["vite", "build"])
 
@@ -33,9 +35,10 @@ class TestCLI:
             assert result.exit_code == 0
 
             # Verify subprocess.run was called with correct arguments
-            mock_run.assert_called_once_with(["npm", "run", "build"], check=True)
+            mock_run.assert_called_once_with(["pnpm", "run", "build"], check=True)
 
-    def test_vite_dev_command(self, app, script_info):
+    def test_vite_dev_command(self, app):
+        """Test to ensure `flask vite dev` is implemented"""
         with (
             patch("threading.Thread") as mock_thread,
             patch("time.sleep") as mock_sleep,
@@ -47,13 +50,17 @@ class TestCLI:
             mock_thread.assert_called_once()
             mock_sleep.assert_called_once_with(2)
 
-    def test_vite_install_command(self, app, script_info):
+    def test_vite_install_command(self, app, tmp_path):
+        """Test to ensure `flask vite install` is implemented"""
         with patch("subprocess.run") as mock_run:
+            vite_dir = tmp_path / "react"
+            vite_dir.mkdir()
+            app.config["INERTIA_VITE_DIR"] = str(vite_dir)
             runner = app.test_cli_runner()
             result = runner.invoke(args=["vite", "install"])
 
             assert result.exit_code == 0
-            mock_run.assert_called_once_with(["npm", "install"], check=True)
+            mock_run.assert_called_once_with(["pnpm", "install"], check=True)
 
     def test_package_manager_detection(self, app, tmp_path):
         """Test package manager detection logic"""
@@ -77,7 +84,8 @@ class TestCLI:
         with patch("shutil.which", return_value=None):
             assert InertiaCommands(Inertia(app)).get_package_manager() == "npm"
 
-    def test_error_handling(self, script_info):
+    def test_error_handling(self, app):
+        """Ensure that is we have no vite dir set, we error"""
         with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, [])):
             runner = app.test_cli_runner()
             result = runner.invoke(args=["vite", "build"])

@@ -1,3 +1,5 @@
+"A blueprint template example"
+
 from flask import Blueprint
 
 from inertia_flask import Inertia, inertia
@@ -11,4 +13,5 @@ inertia_ext.init_app(bp)
 @bp.route("/blueprint")
 @inertia("component")
 def dashboard():
+    "Example blueprint route"
     return {"message": "Welcome to the blueprint!"}

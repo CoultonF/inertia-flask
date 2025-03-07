@@ -20,6 +20,12 @@ class TestPage(TestInertia):
         response = test_client.get(self.route, headers=self.inertia_headers(app))
         assert json.loads(response.data) == self.inertia_expect(app)
 
+    def test_version_mismatch(self, test_client):
+        """Test version mismatch handling"""
+        headers = {"X-Inertia": "true", "X-Inertia-Version": "wrong-version"}
+        response = test_client.get("/", headers=headers)
+        assert response.status_code == 409
+
 
 class TestShorthand(TestInertia):
     root = "app"
