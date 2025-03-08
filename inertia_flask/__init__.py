@@ -1,4 +1,4 @@
-from .extension import Inertia
+from .extension import Inertia, InertiaInitializationError
 from .responses import (
     InertiaResponse,
     clear_history,
@@ -13,6 +13,7 @@ from .version import get_asset_version as _get_asset_version
 __all__ = [
     "inertia",
     "InertiaResponse",
+    "InertiaInitializationError",
     "location",
     "render",
     "clear_history",

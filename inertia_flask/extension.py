@@ -16,6 +16,12 @@ from .settings import init_settings
 from .version import get_asset_version
 
 
+class InertiaInitializationError(Exception):
+    """Raised when Inertia is initialized incorrectly"""
+
+    pass
+
+
 class Inertia:
     """
     Flask Inertia is an extension on Flask that enables the Inertia.js protocol.
@@ -36,15 +42,18 @@ class Inertia:
             init_settings(app)  # Replace app.config.from_object(Settings)
             self._init_extension(app)
             cli.register_as_flask(app)
+            app.context_processor(self.vite_processor)
+            app.before_request(self.before_request)
+            app.after_request(self.after_request)
         elif isinstance(app, Blueprint):
             blueprint = app
             # Register the extension once the blueprint is registered
             blueprint.record_once(self.register_blueprint)
+            blueprint.context_processor(self.vite_processor)
+            blueprint.before_request(self.before_request)
+            blueprint.after_request(self.after_request)
         if encrypt:
             app.before_request(lambda: encrypt_history(encrypt))
-        app.context_processor(self.vite_processor)
-        app.before_request(self.before_request)
-        app.after_request(self.after_request)
 
     def register_blueprint(self, state: BlueprintSetupState):
         """Register a blueprint with the app"""
@@ -57,7 +66,12 @@ class Inertia:
         """Store a reference to the extension in the app's extensions."""
         if not hasattr(app, "extensions"):
             app.extensions = {}
-        app.extensions["inertia"] = self
+        if "inertia" in app.extensions:
+            raise InertiaInitializationError(
+                "Inertia is already initialized on this app"
+            )
+        else:
+            app.extensions["inertia"] = self
 
     def before_request(self):
         """Before middleware"""

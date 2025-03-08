@@ -23,7 +23,7 @@ class TestPage(TestInertia):
     def test_version_mismatch(self, test_client):
         """Test version mismatch handling"""
         headers = {"X-Inertia": "true", "X-Inertia-Version": "wrong-version"}
-        response = test_client.get("/", headers=headers)
+        response = test_client.get(self.route, headers=headers)
         assert response.status_code == 409
 
 

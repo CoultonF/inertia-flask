@@ -22,11 +22,16 @@ class TestInertia:
     def component(self):
         """Subclasses must define the component attribute."""
 
+    @property
+    def blueprint(self):
+        """Subclasses must define the route attribute."""
+        return None
+
     expected_props = {}
 
     def get_asset_version(self, app):
         with app.test_request_context(self.route):
-            return _get_asset_version()
+            return _get_asset_version(self.blueprint)
 
     def parse_initial_response(self, response):
         soup = BeautifulSoup(response.data, "html.parser")
