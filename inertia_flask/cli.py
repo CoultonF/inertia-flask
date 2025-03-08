@@ -163,8 +163,8 @@ class InertiaCommands:
         """Run Vite dev server (for direct calling)"""
         return self._run_vite_dev()
 
-    def get_package_manager(self):
+    def get_package_manager(self, vite_dir_path=None):
         """Get the package manager used for the cli. Used for testing purposes."""
         vite_dir = self.app.config.get("INERTIA_VITE_DIR")
-        vite_dir_path = os.path.join(self.app.root_path, vite_dir)
+        vite_dir_path = vite_dir_path or os.path.join(self.app.root_path, vite_dir)
         return get_package_manager(vite_dir_path)

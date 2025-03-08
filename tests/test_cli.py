@@ -21,6 +21,16 @@ class TestCLI:
         commands.register_as_flask(app)
         return app
 
+    @pytest.fixture
+    def commands(self):
+        """define an app and attach inertia commands"""
+        app = Flask(__name__)
+        app.config["INERTIA_VITE_DIR"] = "react"
+        inertia = Inertia(app)
+        commands = InertiaCommands(inertia)
+        commands.register_as_flask(app)
+        return commands
+
     def test_vite_build_command(self, app, tmp_path):
         """Test to ensure `flask vite build` is implemented"""
         with patch("subprocess.run") as mock_run:
@@ -62,27 +72,26 @@ class TestCLI:
             assert result.exit_code == 0
             mock_run.assert_called_once_with(["pnpm", "install"], check=True)
 
-    def test_package_manager_detection(self, app, tmp_path):
+    def test_package_manager_detection(self, commands, tmp_path):
         """Test package manager detection logic"""
         vite_dir = tmp_path / "react"
         vite_dir.mkdir()
-        app.config["INERTIA_VITE_DIR"] = str(vite_dir)
 
         # Test pnpm detection via lock file
         pnpm_lock = vite_dir / "pnpm-lock.yaml"
         pnpm_lock.touch()
-        assert InertiaCommands(Inertia(app)).get_package_manager() == "pnpm"
+        assert commands.get_package_manager(vite_dir) == "pnpm"
         pnpm_lock.unlink()
 
         # Test yarn detection via lock file
         yarn_lock = vite_dir / "yarn.lock"
         yarn_lock.touch()
-        assert InertiaCommands(Inertia(app)).get_package_manager() == "yarn"
+        assert commands.get_package_manager(vite_dir) == "yarn"
         yarn_lock.unlink()
 
         # Test fallback to npm
         with patch("shutil.which", return_value=None):
-            assert InertiaCommands(Inertia(app)).get_package_manager() == "npm"
+            assert commands.get_package_manager(vite_dir) == "npm"
 
     def test_error_handling(self, app):
         """Ensure that is we have no vite dir set, we error"""
