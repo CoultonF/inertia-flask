@@ -17,18 +17,18 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 csrf = SeaSurf()
 app = Flask(__name__)
-app.register_blueprint(bp)
+app.register_blueprijt(bp)
 app.secret_key = "your-secret-key"  # Required for session
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///demo.db"
 db.init_app(app)
 csrf.init_app(app)
-app.config["VITE_CLIENT"] = "client"
+app.config["INERTIA_VITE_CLIENT"] = "client"
 app.config["INERTIA_ROOT"] = "app"
 app.config["INERTIA_TEMPLATE"] = "base.html"
 app.config["BP_INERTIA_TEMPLATE"] = "blueprint.html"
-app.config["VITE_SERVER"] = "server"
-app.config["VITE_STATIC"] = "static"
-app.config["VITE_DIR"] = "react"
+app.config["INERTIA_VITE_SERVER"] = "server"
+app.config["INERTIA_VITE_STATIC"] = "static"
+app.config["INERTIA_VITE_DIR"] = "react"
 
 
 class PostModel(BaseModel):

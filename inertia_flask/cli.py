@@ -1,9 +1,11 @@
 import os
 import shutil
 import subprocess
+import sys
 import threading
 import time
 
+import click
 from flask import Blueprint, Flask
 from flask.cli import AppGroup
 
@@ -42,31 +44,68 @@ class InertiaCommands:
     def register_as_flask(self, app: Flask):
         """Register CLI commands with the Flask app"""
         # Create a command group
-        vite_group = AppGroup("vite", help="Vite integration commands")
-
-        # Add the build command
-        @vite_group.command("build")
-        def vite_build_command():
-            """Build Vite assets for production"""
-            self._vite_build()
-
-        # Add the dev command
-        @vite_group.command("dev")
-        def vite_dev_command():
-            """Run Flask and Vite dev servers together"""
-            self._vite_dev()
-
-        @vite_group.command("install")
-        def vite_install_command():
-            """Install Vite dependencies"""
-            self._vite_install()
+        vite_group = self.register_vite()
+        inertia_group = self.register_inertia()
 
         # Add the command group to the app
         app.cli.add_command(vite_group)
+        app.cli.add_command(inertia_group)
 
     def register_as_blueprint(self, blueprint: Blueprint):
         """Register CLI commands with the Blueprint"""
 
+        vite_group = self.register_vite()
+        inertia_group = self.register_inertia()
+        blueprint.cli.add_command(vite_group)
+        blueprint.cli.add_command(inertia_group)
+
+    def register_inertia(self):
+        """Register CLI commands with the Flask app"""
+        # inertia_group = AppGroup("inertia", help="Inertia integration commands")
+
+        @click.command(name="inertia")
+        @click.option("--debug", is_flag=True, help="Enable debug mode")
+        def inertia_group(debug):
+            """Build Inertia assets for production"""
+            if debug:
+                self.app.config["DEBUG"] = True
+                vite_process = self.vite_dev()
+                vite_thread = threading.Thread(
+                    target=self._stream_output, args=(vite_process, "vite")
+                )
+                vite_thread.daemon = True
+                vite_thread.start()
+                try:
+                    # Keep the main thread running
+                    while True:
+                        if vite_process is not None and vite_process.poll() is not None:
+                            print("Vite server stopped unexpectedly")
+                            break
+                        # if flask_process.poll() is not None:
+                        #     print("Flask server stopped unexpectedly")
+                        #     break
+                        time.sleep(1)
+                except KeyboardInterrupt:
+                    print("\nShutting down servers...")
+                finally:
+                    # Ensure both processes are terminated
+                    if vite_process is not None:
+                        vite_process.terminate()
+                        # flask_process.terminate()
+                        try:
+                            vite_process.wait(timeout=5)
+                            # flask_process.wait(timeout=5)
+                        except subprocess.TimeoutExpired:
+                            vite_process.kill()
+                        # flask_process.kill()
+            else:
+                self.app.config["DEBUG"] = False
+                self._vite_build()
+
+        return inertia_group
+
+    def register_vite(self):
+        """Register CLI commands with the Flask app"""
         # Create a command group
         vite_group = AppGroup("vite", help="Vite integration commands")
 
@@ -87,7 +126,7 @@ class InertiaCommands:
             """Install Vite dependencies"""
             self._vite_install()
 
-        blueprint.cli.add_command(vite_group)
+        return vite_group
 
     def _run_vite_dev(self):
         """Run Vite dev server in a separate thread"""
@@ -104,8 +143,8 @@ class InertiaCommands:
 
         # Run Vite dev server
         os.chdir(vite_dir_path)
-        with subprocess.Popen([package_manager, "run", "dev"]):
-            print(f"Vite dev server started in {vite_dir_path}")
+        process = subprocess.Popen([package_manager, "run", "dev"])
+        return process
 
     def _vite_dev(self):
         """Run Flask and Vite dev servers together"""
@@ -113,12 +152,12 @@ class InertiaCommands:
         vite_thread = threading.Thread(target=self.run_vite_dev)
         vite_thread.daemon = True
         vite_thread.start()
-
-        # Give Vite time to start
-        time.sleep(2)
-
-        # Flask server will continue running in the main thread
-        print("Flask server running with Vite integration")
+        try:
+            # Keep the main thread running
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            print("\nShutting down vite server...")
 
     def _vite_build(self):
         """Build Vite assets for production"""
@@ -146,6 +185,20 @@ class InertiaCommands:
         os.chdir(vite_dir_path)
         subprocess.run([package_manager, "install"], check=True)
         print(f"Vite dependencies installed successfully in {vite_dir_path}")
+
+    def _stream_output(self, process, prefix):
+        while True:
+            if process is not None:
+                output = process.stdout.readline()
+                if output:
+                    print(f"[{prefix}] {output.strip()}")
+                error = process.stderr.readline()
+                if error:
+                    print(f"[{prefix}] {error.strip()}", file=sys.stderr)
+                if process.poll() is not None:
+                    break
+            else:
+                break
 
     def vite_build(self):
         """Build Vite assets for production (for direct calling)"""

@@ -8,7 +8,7 @@
 
 The Inertia.js Flask Adapter allows you to seamlessly integrate Inertia.js with your Flask applications. This adapter provides the necessary tools to build modern, single-page applications using Flask as the backend and Inertia.js for the frontend.
 
-## Installation
+## Development Installation
 
 ## Using uv (recommended)
 
@@ -21,8 +21,6 @@ pip install uv
 ```bash
 uv venv
 source .venv/bin/activate  # Unix/macOS
-# or
-.venv\Scripts\activate  # Windows
 ```
 
 3. Install dependencies:
@@ -64,6 +62,14 @@ inertia.init_app(app)
 
 You can also initialize the Inertia extension on a specific Blueprint:
 
+#### Important Note About Blueprints
+
+When using Inertia with Flask, you must choose between initializing Inertia on either:
+- The main Flask application
+- A Blueprint
+
+You cannot initialize Inertia on both simultaneously. This is because Inertia manages page state and routing, which can lead to conflicts if multiple instances are running.
+
 
 ```python
 from flask import Blueprint, Flask
@@ -84,6 +90,11 @@ inertia = Inertia(blueprint)
 # Alternatively, you can initialize it directly: inertia = Inertia(blueprint)
 ```
 
+## Command Line Interface (CLI)
+
+- `flask vite build`: Builds Vite assets for production
+- `flask vite dev`: Runs Flask and Vite dev servers together
+- `flask vite install`: Installs Vite dependencies
 
 ## CSRF
 
@@ -103,31 +114,41 @@ The following configuration options can be set in your Flask application's confi
 
 ### Core Settings
 
+Use these settings for core Inertia functionality.
+
 - `INERTIA_TEMPLATE` (required): The base template used for rendering Inertia pages
 - `INERTIA_JSON_ENCODER`: Custom JSON encoder for serializing data (default: `InertiaJsonEncoder`)
 - `INERTIA_ENCRYPT_HISTORY`: Enable encryption of Inertia history state (default: `False`)
 
 ### Server-Side Rendering (SSR)
 
+Use these settings to configure SSR support.
+
 - `INERTIA_SSR_ENABLED`: Enable server-side rendering support (default: `False`)
 - `INERTIA_SSR_URL`: URL where the SSR server is running (default: `"http://localhost:13714"`)
 
 ### Vite Integration
 
+Use these settings to configure Vite.
+
 - `INERTIA_VITE_DIR`: Directory containing your Vite/frontend project (default: `"inertia"`)
 - `INERTIA_VITE_ORIGIN`: URL where Vite dev server runs (default: `"http://localhost:5173"`)
 - `INERTIA_ROOT`: Root element ID for mounting the Inertia app (default: `"app"`)
 
-#### Asset Organization
+    #### Asset Organization
 
-- `INERTIA_VITE_STATIC`: Directory for static assets (default: `"static"`)
-- `INERTIA_VITE_CLIENT`: Subdirectory for client-side assets (default: `"client"`)
-- `INERTIA_VITE_SERVER`: Subdirectory for server-side assets when using ssr (default: `"server"`)
+    Use these settings to specify the directory structure for your Vite assets.
 
-#### Manifest Files
+    - `INERTIA_VITE_STATIC`: Directory for static assets (default: `"static"`)
+    - `INERTIA_VITE_CLIENT`: Subdirectory for client-side assets (default: `"client"`)
+    - `INERTIA_VITE_SERVER`: Subdirectory for server-side assets when using ssr (default: `"server"`)
 
-- `INERTIA_VITE_MANIFEST`: Client-side manifest filename (default: `"manifest.json"`)
-- `INERTIA_VITE_SSR_MANIFEST`: Server-side manifest filename (default: `"manifest.json"`)
+    #### Manifest Files
+
+    Use these settings to specify the manifest filenames.
+
+    - `INERTIA_VITE_MANIFEST`: Client-side manifest filename (default: `"manifest.json"`)
+    - `INERTIA_VITE_SSR_MANIFEST`: Server-side manifest filename (default: `"manifest.json"`)
 
 ### Example Configuration
 
@@ -154,37 +175,21 @@ app.config.update(
 )
 ```
 
-## Use
-
-###
-
 ## Examples
 
 Ensure you have pnpm/npm installed and are on the latest version of node as Vite has dropped support for Node v21. If you are encountering issues around node and using Windows, try to sign out.
 
 To run the example project, follow these steps:
 
-#### Using `pnpm`
-
 ``` bash
-cd demo/react
-pnpm install  
-pnpm run dev
-```
-
-#### Using `npm`
-
-```bash
-cd demo/react
-npm install
-npm run dev
-```
-
-In a separate terminal, start the Flask server:
-
-``` bash
-poetry install --with dev
-poetry run demo
+uv venv
+source .venv/bin/activate  # Unix/macOS
+uv pip install -e .
+uv pip install -r requirements.txt
+uv pip install -r requirements-dev.txt
+cd examples/react
+flask vite install
+flask vite dev
 ```
 
 ## Contributing
@@ -193,12 +198,15 @@ To contribute to the development of this extension, follow these steps:
 
 1. Install the project dependencies with test support:
     ``` bash
-    poetry install --with test
+    uv pip install -e .
+    uv pip install -r requirements.txt
+    uv pip install -r requirements-test.txt
+    source .venv/bin/activate  # Unix/macOS
     ```
 
 2. Run the unit tests using pytest:
     ``` bash
-    poetry run pytest
+    python -m pytest
     ```
 
 ## Testing
