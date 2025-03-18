@@ -2,7 +2,8 @@ from time import sleep
 
 from flask import Flask
 
-from inertia_flask import Inertia, clear_history, defer, encrypt_history, inertia, merge
+from inertia_flask import (Inertia, clear_history, defer, encrypt_history,
+                           inertia, merge)
 from tests.testapp.blueprint.bp import bp
 
 
@@ -13,6 +14,27 @@ def create_blueprint():
     app.config["INERTIA_TEMPLATE"] = "base.html"
     app.config["BP_INERTIA_TEMPLATE"] = "blueprint.html"
     app.register_blueprint(bp)
+    return app
+
+
+def create_share_app():
+    inertia_ext = Inertia()
+    app = Flask(__name__)
+    app.config["TESTING"] = True  # Enable testing mode
+    app.config["SECRET_KEY"] = "your-secret-key"  # Required for session
+    app.config["INERTIA_TEMPLATE"] = "base.html"
+    inertia_ext.init_app(app)
+    inertia_ext.share("auth", lambda: {"user_id": "123"})
+
+    def get_email():
+        sleep(0.1)
+        return "alice@wonderland.com"
+
+    @app.route("/share")
+    @inertia("component")
+    def defer_page():
+        return {"name": "Alice", "email": defer(get_email)}
+
     return app
 
 

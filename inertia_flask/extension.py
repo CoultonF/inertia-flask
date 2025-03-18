@@ -37,6 +37,7 @@ class Inertia:
         to initilize Inertia extension in flask"""
         self.app = app
         self.encrypt = encrypt
+        self._share_data = {}
         if isinstance(app, Flask):
             cli = InertiaCommands(self)
             init_settings(app)  # Replace app.config.from_object(Settings)
@@ -161,6 +162,10 @@ class Inertia:
             endpoint or component_name.lower(),
             lambda: route_render(component_name),
         )
+
+    def share(self, key, value):
+        """Share data with all requests."""
+        self._share_data[key] = value
 
     def vite_processor(self):
         "Attach Vite templates to the jinja2 templating language for flask"

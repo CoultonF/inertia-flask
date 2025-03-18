@@ -3,15 +3,8 @@ from functools import wraps
 from http import HTTPStatus
 
 import requests
-from flask import (
-    Response,
-    current_app,
-    has_app_context,
-    render_template,
-    render_template_string,
-    request,
-    session,
-)
+from flask import (Response, current_app, has_app_context, render_template,
+                   render_template_string, request, session)
 from jinja2.exceptions import TemplateNotFound
 from markupsafe import Markup
 
@@ -97,6 +90,7 @@ class BaseInertiaResponseMixin:
         _props = {
             **self.request.inertia,
             **self.props,
+            **current_app.extensions["inertia"]._share_data,
         }
 
         for key in list(_props.keys()):

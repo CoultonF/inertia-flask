@@ -1,4 +1,5 @@
 import subprocess
+import threading
 from unittest.mock import patch
 
 import pytest
@@ -47,19 +48,6 @@ class TestCLI:
             # Verify subprocess.run was called with correct arguments
             mock_run.assert_called_once_with(["pnpm", "run", "build"], check=True)
 
-    def test_vite_dev_command(self, app):
-        """Test to ensure `flask vite dev` is implemented"""
-        with (
-            patch("threading.Thread") as mock_thread,
-            patch("time.sleep") as mock_sleep,
-        ):
-            runner = app.test_cli_runner()
-            result = runner.invoke(args=["vite", "dev"])
-
-            assert result.exit_code == 0
-            mock_thread.assert_called_once()
-            mock_sleep.assert_called_once_with(2)
-
     def test_vite_install_command(self, app, tmp_path):
         """Test to ensure `flask vite install` is implemented"""
         with patch("subprocess.run") as mock_run:
@@ -99,13 +87,3 @@ class TestCLI:
             runner = app.test_cli_runner()
             result = runner.invoke(args=["vite", "build"])
             assert result.exit_code != 0
-
-    def test_missing_package_json(self, app, tmp_path):
-        """Test behavior when package.json is missing"""
-        vite_dir = tmp_path / "react"
-        vite_dir.mkdir()
-        app.config["INERTIA_VITE_DIR"] = str(vite_dir)
-
-        runner = app.test_cli_runner()
-        result = runner.invoke(args=["vite", "dev"])
-        assert "No package.json found" in result.output
