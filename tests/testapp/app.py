@@ -14,6 +14,7 @@ def create_blueprint():
     app.config["INERTIA_TEMPLATE"] = "base.html"
     app.config["BP_INERTIA_TEMPLATE"] = "blueprint.html"
     app.register_blueprint(bp)
+
     return app
 
 
@@ -48,7 +49,7 @@ def create_app():
 
     # Register routes
 
-    inertia_ext.add_shorthand_route("/shorthand", "component")
+    inertia_ext.add_shorthand_route(app, "/shorthand", "component")
 
     def get_email():
         sleep(0.1)

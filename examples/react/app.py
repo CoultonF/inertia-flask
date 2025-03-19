@@ -29,7 +29,7 @@ db.init_app(app)
 csrf.init_app(app)
 inertia_ext.init_app(app)
 
-inertia_ext.add_shorthand_route("/test", "test")
+inertia_ext.add_shorthand_route(app, "/test", "test")
 
 
 class PostModel(BaseModel):

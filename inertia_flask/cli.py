@@ -6,7 +6,7 @@ import threading
 import time
 
 import click
-from flask import Blueprint, Flask
+from flask import Blueprint, Flask, current_app
 from flask.cli import AppGroup
 
 
@@ -39,7 +39,6 @@ class InertiaCommands:
 
     def __init__(self, inertia_instance, app=None):
         self.inertia = inertia_instance
-        self.app = app or inertia_instance.app
 
     def register_as_flask(self, app: Flask):
         """Register CLI commands with the Flask app"""
@@ -68,7 +67,7 @@ class InertiaCommands:
         def inertia_group(debug):
             """Build Inertia assets for production"""
             if debug:
-                self.app.config["DEBUG"] = True
+                current_app.config["DEBUG"] = True
                 vite_process = self.vite_dev()
                 vite_thread = threading.Thread(
                     target=self._stream_output, args=(vite_process, "vite")
@@ -99,7 +98,7 @@ class InertiaCommands:
                             vite_process.kill()
                         # flask_process.kill()
             else:
-                self.app.config["DEBUG"] = False
+                current_app.config["DEBUG"] = False
                 self._vite_build()
 
         return inertia_group
@@ -130,8 +129,8 @@ class InertiaCommands:
 
     def _run_vite_dev(self):
         """Run Vite dev server in a separate thread"""
-        vite_dir = self.app.config.get("INERTIA_VITE_DIR")
-        vite_dir_path = os.path.join(self.app.root_path, vite_dir)
+        vite_dir = current_app.config.get("INERTIA_VITE_DIR")
+        vite_dir_path = os.path.join(current_app.root_path, vite_dir)
 
         # Check if package.json exists
         if not os.path.exists(os.path.join(vite_dir_path, "package.json")):
@@ -161,8 +160,8 @@ class InertiaCommands:
 
     def _vite_build(self):
         """Build Vite assets for production"""
-        vite_dir = self.app.config.get("INERTIA_VITE_DIR", "react")
-        vite_dir_path = os.path.join(self.app.root_path, vite_dir)
+        vite_dir = current_app.config.get("INERTIA_VITE_DIR", "react")
+        vite_dir_path = os.path.join(current_app.root_path, vite_dir)
 
         # Determine package manager
         package_manager = get_package_manager(vite_dir_path)
@@ -176,8 +175,8 @@ class InertiaCommands:
 
     def _vite_install(self):
         """Install Vite dependencies"""
-        vite_dir = self.app.config.get("INERTIA_VITE_DIR", "react")
-        vite_dir_path = os.path.join(self.app.root_path, vite_dir)
+        vite_dir = current_app.config.get("INERTIA_VITE_DIR", "react")
+        vite_dir_path = os.path.join(current_app.root_path, vite_dir)
         # Determine package manager
         package_manager = get_package_manager(vite_dir_path)
 
@@ -218,6 +217,6 @@ class InertiaCommands:
 
     def get_package_manager(self, vite_dir_path=None):
         """Get the package manager used for the cli. Used for testing purposes."""
-        vite_dir = self.app.config.get("INERTIA_VITE_DIR")
-        vite_dir_path = vite_dir_path or os.path.join(self.app.root_path, vite_dir)
+        vite_dir = current_app.config.get("INERTIA_VITE_DIR")
+        vite_dir_path = vite_dir_path or os.path.join(current_app.root_path, vite_dir)
         return get_package_manager(vite_dir_path)

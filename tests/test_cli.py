@@ -28,9 +28,10 @@ class TestCLI:
         app = Flask(__name__)
         app.config["INERTIA_VITE_DIR"] = "react"
         inertia = Inertia(app)
-        commands = InertiaCommands(inertia)
-        commands.register_as_flask(app)
-        return commands
+        with app.app_context():
+            commands = InertiaCommands(inertia)
+            commands.register_as_flask(app)
+            yield InertiaCommands(inertia)
 
     def test_vite_build_command(self, app, tmp_path):
         """Test to ensure `flask vite build` is implemented"""

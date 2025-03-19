@@ -26,16 +26,15 @@ class Inertia:
     """
     Flask Inertia is an extension on Flask that enables the Inertia.js protocol.
     """
+    app = current_app
 
     def __init__(self, app: Optional[Union[Flask, Blueprint]] = None):
-        self.app = None
         if app is not None:
             self.init_app(app)
 
     def init_app(self, app, encrypt=False):
         """Call this function with the app instance
         to initilize Inertia extension in flask"""
-        self.app = app
         self.encrypt = encrypt
         self._share_data = {}
         if isinstance(app, Flask):
@@ -59,9 +58,9 @@ class Inertia:
     def register_blueprint(self, state: BlueprintSetupState):
         """Register a blueprint with the app"""
         init_settings(state.app)  # Replace state.app.config.from_object(Settings)
-        cli = InertiaCommands(self, state.app)
+        cli = InertiaCommands(self)
         self._init_extension(state.app)
-        cli.register_as_blueprint(self.app)
+        cli.register_as_blueprint(state.blueprint)
 
     def _init_extension(self, app: App):
         """Store a reference to the extension in the app's extensions."""
@@ -110,14 +109,11 @@ class Inertia:
 
     def is_stale(self):
         "Will return true if the html document does not match what the client has."
+        blueprint = request.blueprint or None
         return request.headers.get(
             "X-Inertia-Version",
-            get_asset_version(
-                self.app.name if isinstance(self.app, Blueprint) else None
-            ),
-        ) != get_asset_version(
-            self.app.name if isinstance(self.app, Blueprint) else None
-        )
+            get_asset_version(blueprint),
+        ) != get_asset_version(blueprint)
 
     def is_stale_inertia_get(self):
         "Check that the request is GET and stale html document"
@@ -134,6 +130,7 @@ class Inertia:
 
     def add_shorthand_route(
         self,
+        app: Flask | Blueprint,
         url: str,
         component_name: str,
         endpoint: Optional[str] = None,
@@ -149,7 +146,7 @@ class Inertia:
         :param endpoint: The endpoint for the registered URL rule. (by default
         ``component_name`` in lower case)
         """
-        if not self.app:
+        if not app:
             raise RuntimeError("Extension has not been initialized correctly.")
 
         def route_render(component_name):
@@ -157,7 +154,7 @@ class Inertia:
                 encrypt_history(encrypt)
             return render(request, component_name)
 
-        self.app.add_url_rule(
+        app.add_url_rule(
             url,
             endpoint or component_name.lower(),
             lambda: route_render(component_name),
@@ -193,7 +190,7 @@ class Inertia:
         def prod_asset(file_path, manifest_path=None):
             manifest = {}
             manifest_path = os.path.join(
-                self.app.root_path, vite_static, vite_client, vite_manifest
+                current_app.root_path, vite_static, vite_client, vite_manifest
             )
 
             try:
@@ -252,7 +249,7 @@ class Inertia:
                 css_files = []
                 try:
                     manifest_path = os.path.join(
-                        self.app.root_path, vite_static, vite_client, vite_manifest
+                        current_app.root_path, vite_static, vite_client, vite_manifest
                     )
                     with open(f"{manifest_path}", encoding="utf-8") as content:
                         manifest = json.load(content)

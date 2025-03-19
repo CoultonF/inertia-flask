@@ -33,7 +33,7 @@ app.config["INERTIA_VITE_STATIC"] = "static"
 app.config["INERTIA_VITE_DIR"] = "react"
 app.config["INERTIA_SSR_ENABLED"] = True
 
-inertia_ext.add_shorthand_route("/test", "test")
+inertia_ext.add_shorthand_route(app, "/test", "test")
 
 
 class PostModel(BaseModel):
