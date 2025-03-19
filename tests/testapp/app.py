@@ -1,6 +1,6 @@
 from time import sleep
 
-from flask import Flask
+from flask import Blueprint, Flask
 
 from inertia_flask import (Inertia, clear_history, defer, encrypt_history,
                            inertia, merge)
@@ -114,6 +114,13 @@ def create_app():
     def encrypt_function():
         encrypt_history()
         return {}
+
+    bp_flask = Blueprint("bp", __name__, template_folder="templates")
+
+    @bp_flask.route("/blueprint")
+    @inertia("component")
+    def bp_page():
+        return {"page": "blueprint"}
 
     return app
 
