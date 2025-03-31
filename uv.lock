@@ -1,0 +1,8 @@
+version = 1
+revision = 1
+requires-python = ">=3.10"
+
+[[package]]
+name = "inertia-flask"
+version = "0.0.1"
+source = { editable = "." }

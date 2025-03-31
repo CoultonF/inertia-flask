@@ -1,10 +1,32 @@
-import json
+from .utils import InertiaJsonEncoder
+
 
 class Settings:
-    def __init__(self):
-        self.INERTIA_VERSION = "1.0"
-        self.INERTIA_LAYOUT = None
-        self.INERTIA_JSON_ENCODER = json.JSONEncoder
-        self.INERTIA_ENCRYPT_HISTORY = False
+    """Default Inertia Flask settings.
+    These settings can be overridden by setting them in your Flask app's config.
+    """
 
-settings = Settings()
+    INERTIA_JSON_ENCODER = InertiaJsonEncoder
+    INERTIA_ENCRYPT_HISTORY = False
+    INERTIA_SSR_ENABLED = False
+    INERTIA_SSR_URL = "http://localhost:13714"
+    INERTIA_ROOT = "app"
+    INERTIA_VITE_ORIGIN = "http://localhost:5173"
+    INERTIA_VITE_CLIENT = "client"
+    INERTIA_VITE_SERVER = "server"
+    INERTIA_VITE_MANIFEST = "manifest.json"
+    INERTIA_VITE_SSR_MANIFEST = "manifest.json"
+    INERTIA_VITE_STATIC = "static"
+    INERTIA_VITE_DIR = "inertia"
+
+
+def init_settings(app):
+    """Initialize Inertia settings while preserving existing app configurations."""
+    defaults = {
+        key: value for key, value in vars(Settings).items() if not key.startswith("_")
+    }
+
+    # Only set values that aren't already in app.config
+    for key, value in defaults.items():
+        if key not in app.config:
+            app.config[key] = value

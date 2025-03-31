@@ -1,17 +1,20 @@
 [project]
 name = "inertia-flask"
-version = "0.1.0"
-description = ""
-authors = [
-    {name = "CoultonFççç",email = "cjrfraser@gmail.com"}
-]
+version = "0.0.1"
+description = "Inertia Flask is a Flask extension that provides a simple way to build single-page applications (SPAs) using Inertia.js."
+authors = [{name = "Coulton Fraser", email="cjrfraser@gmail.com"}]
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "flask (>=3.1.0,<4.0.0)"
-]
-
+requires-python = ">=3.10"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-v --cov=inertia_flask --cov-report=term-missing"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]

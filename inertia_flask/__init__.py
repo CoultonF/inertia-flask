@@ -1,16 +1,28 @@
-from .inertia import Inertia
-from .views import (
-    inertia_location,
-    render_inertia,
-    get_asset_version,
+from .extension import Inertia, InertiaInitializationError
+from .responses import (
+    InertiaResponse,
+    clear_history,
+    encrypt_history,
+    inertia,
+    location,
+    render,
 )
-from .middleware import inertia_middleware
+from .utils import defer, lazy, merge, optional
+from .version import get_asset_version as _get_asset_version
 
 __all__ = [
+    "inertia",
+    "InertiaResponse",
+    "InertiaInitializationError",
+    "location",
+    "render",
+    "clear_history",
+    "encrypt_history",
+    "defer",
+    "lazy",
+    "merge",
+    "optional",
     "Inertia",
-    "render_inertia",
-    "inertia_location",
-    "get_asset_version",
-    "inertia_middleware",
+    "_get_asset_version",
 ]
-__version__ = "0.9.1"
+__version__ = "0.0.1"
