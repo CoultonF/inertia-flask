@@ -92,7 +92,7 @@ jobs:
           python-version: '3.13'
 
       - name: Install setuptools
-        run: uv pip install --upgrade setuptools wheel twine
+        run: uv pip install --upgrade setuptools wheel twine tomlkit
 
       - name: Release
         if: github.event_name == 'push'
