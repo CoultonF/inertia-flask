@@ -148,7 +148,13 @@ class InertiaCommands:
     def _vite_dev(self):
         """Run Flask and Vite dev servers together"""
         # Start Vite in a separate thread
-        vite_thread = threading.Thread(target=self.run_vite_dev)
+        app = current_app._get_current_object()
+
+        def target():
+            with app.app_context():
+                self._run_vite_dev()
+
+        vite_thread = threading.Thread(target=target)
         vite_thread.daemon = True
         vite_thread.start()
         try:
@@ -210,10 +216,6 @@ class InertiaCommands:
     def vite_install(self):
         """Install Vite dependencies (for direct calling)"""
         return self._vite_install()
-
-    def run_vite_dev(self):
-        """Run Vite dev server (for direct calling)"""
-        return self._run_vite_dev()
 
     def get_package_manager(self, vite_dir_path=None):
         """Get the package manager used for the cli. Used for testing purposes."""
