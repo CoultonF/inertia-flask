@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full w-full m-0 p-0 min-w-0">
+  <head>
+    <title>Inertia Flask Demo with Vue.js</title>
+    <script>
+      // Check for dark mode preference
+      const isDarkMode = localStorage.theme === 'dark' || 
+        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+      // Apply dark mode class to the root element
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1.0,maximum-scale=1.0" />
+    {% if config.DEBUG == true %}
+      <!-- For setting up vite for hot reload with flask see this page -->
+      <!-- https://vite.dev/guide/backend-integration.html#backend-integration -->
+      <script type="module" src="http://localhost:5173/public/@vite/client"></script>
+      <script type="module" src="http://localhost:5173/public/src/main.js"></script>
+    {% else %}
+      <!-- Use built assets in production -->
+      <link href="{{ url_for('static', filename='assets/main.css') }}"
+            rel="stylesheet">
+      <script type="module"
+            src="{{ url_for('static', filename='assets/main.js') }}"></script>
+  {% endif %}
+</head>
+<body style="height: 100%;">
+  <div id="app" style="height: 100%;" data-page='{{ page }}'></div>
+</body>
+</html>

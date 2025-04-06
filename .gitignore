@@ -98,3 +98,4 @@ out/
 .cache/
 .temp/
 .tmp/
+client/
