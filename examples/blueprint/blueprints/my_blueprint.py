@@ -5,7 +5,12 @@ from flask import Blueprint
 from inertia_flask import Inertia, inertia
 
 # Create blueprint
-bp = Blueprint("bp", __name__, template_folder="templates")
+bp = Blueprint(
+    "bp",
+    __name__,
+    template_folder="bp_templates",
+    static_folder="../react/dist",
+)
 inertia_ext = Inertia()
 inertia_ext.init_app(bp)
 
@@ -14,4 +19,4 @@ inertia_ext.init_app(bp)
 @inertia("component")
 def dashboard():
     "Example blueprint route"
-    return {"message": "Welcome to the blueprint!"}
+    return {"value": "1"}

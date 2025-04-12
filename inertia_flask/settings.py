@@ -11,12 +11,10 @@ class Settings:
     INERTIA_SSR_ENABLED = False
     INERTIA_SSR_URL = "http://localhost:13714"
     INERTIA_ROOT = "app"
+    INERTIA_STATIC_ENDPOINT = "static"
     INERTIA_VITE_ORIGIN = "http://localhost:5173"
-    INERTIA_VITE_CLIENT = "client"
-    INERTIA_VITE_SERVER = "server"
-    INERTIA_VITE_MANIFEST = "manifest.json"
-    INERTIA_VITE_SSR_MANIFEST = "manifest.json"
-    INERTIA_VITE_STATIC = "static"
+    INERTIA_VITE_MANIFEST_PATH = None
+    INERTIA_VITE_SSR_MANIFEST_PATH = None
     INERTIA_VITE_DIR = "inertia"
 
 

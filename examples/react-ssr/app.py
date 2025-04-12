@@ -26,9 +26,7 @@ db.init_app(app)
 csrf.init_app(app)
 inertia_ext.init_app(app)
 inertia_ext.share("auth", lambda: {"user": "John Doe"})
-app.config["INERTIA_VITE_CLIENT"] = "client"
 app.config["INERTIA_ROOT"] = "app"
-app.config["INERTIA_VITE_SERVER"] = "server"
 app.config["INERTIA_VITE_STATIC"] = "static"
 app.config["INERTIA_VITE_DIR"] = "react"
 app.config["INERTIA_SSR_ENABLED"] = True

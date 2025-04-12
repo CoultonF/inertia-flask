@@ -121,6 +121,7 @@ Use these settings for core Inertia functionality.
 - `INERTIA_TEMPLATE` (required): The base template used for rendering Inertia pages
 - `INERTIA_JSON_ENCODER`: Custom JSON encoder for serializing data (default: `InertiaJsonEncoder`)
 - `INERTIA_ENCRYPT_HISTORY`: Enable encryption of Inertia history state (default: `False`)
+- `INERTIA_STATIC_ENDPOINT`: Directory for static assets (default: `"static"`, blueprints: `"your_bp_name.static"`)
 
 ### Server-Side Rendering (SSR)
 
@@ -137,20 +138,13 @@ Use these settings to configure Vite.
 - `INERTIA_VITE_ORIGIN`: URL where Vite dev server runs (default: `"http://localhost:5173"`)
 - `INERTIA_ROOT`: Root element ID for mounting the Inertia app (default: `"app"`)
 
-    #### Asset Organization
-
-    Use these settings to specify the directory structure for your Vite assets.
-
-    - `INERTIA_VITE_STATIC`: Directory for static assets (default: `"static"`)
-    - `INERTIA_VITE_CLIENT`: Subdirectory for client-side assets (default: `"client"`)
-    - `INERTIA_VITE_SERVER`: Subdirectory for server-side assets when using ssr (default: `"server"`)
 
     #### Manifest Files
 
     Use these settings to specify the manifest filenames.
 
-    - `INERTIA_VITE_MANIFEST`: Client-side manifest filename (default: `"manifest.json"`)
-    - `INERTIA_VITE_SSR_MANIFEST`: Server-side manifest filename (default: `"manifest.json"`)
+    - `INERTIA_VITE_MANIFEST_PATH` (required): Client-side manifest file path
+    - `INERTIA_VITE_SSR_MANIFEST_PATH`: Server-side manifest file path (default: `None`)
 
 ### Example Configuration
 

@@ -26,6 +26,7 @@ class Inertia:
     """
     Flask Inertia is an extension on Flask that enables the Inertia.js protocol.
     """
+
     app = current_app
 
     def __init__(self, app: Optional[Union[Flask, Blueprint]] = None):
@@ -170,9 +171,6 @@ class Inertia:
         vite_origin = current_app.config.get(
             "INERTIA_VITE_ORIGIN", "http://localhost:5173"
         )
-        vite_static = current_app.config.get("INERTIA_VITE_STATIC", "static")
-        vite_client = current_app.config.get("INERTIA_VITE_CLIENT", "client")
-        vite_manifest = current_app.config.get("INERTIA_VITE_MANIFEST", "manifest.json")
         is_debug = flask_debug is True
 
         # Detect if Vite dev server is running
@@ -189,9 +187,17 @@ class Inertia:
 
         def prod_asset(file_path, manifest_path=None):
             manifest = {}
-            manifest_path = os.path.join(
-                current_app.root_path, vite_static, vite_client, vite_manifest
+            static_endpoint = current_app.config.get(
+                "INERTIA_STATIC_ENDPOINT", "static"
             )
+            manifest_path = os.path.join(
+                current_app.root_path,
+                current_app.config.get("INERTIA_VITE_MANIFEST_PATH"),
+            )
+            if manifest_path is None:
+                raise ValueError(
+                    "Manifest path is not set. Set INERTIA_VITE_MANIFEST_PATH in your config."
+                )
 
             try:
                 with open(f"{manifest_path}", encoding="utf-8") as content:
@@ -199,14 +205,16 @@ class Inertia:
                     if file_path in manifest:
                         url_path = manifest[file_path]["file"]
                         return url_for(
-                            vite_static, filename=f"{vite_client}/{url_path}"
+                            static_endpoint,
+                            filename=url_path,
                         )
                     else:
                         current_app.logger.warning(
                             f"Asset {file_path} not found in manifest"
                         )
                         return url_for(
-                            vite_static, filename=f"{vite_client}/{file_path}"
+                            static_endpoint,
+                            filename=file_path,
                         )
             except OSError as exception:
                 current_app.logger.error(
@@ -214,7 +222,10 @@ class Inertia:
                 )
                 # Fallback to direct path in development
                 if is_debug:
-                    return url_for(vite_static, filename=f"{vite_client}/{file_path}")
+                    return url_for(
+                        static_endpoint,
+                        filename=file_path,
+                    )
                 raise OSError(
                     "Manifest file not found. Run `npm run build`."
                 ) from exception
@@ -248,9 +259,11 @@ class Inertia:
                 # Use production assets even in debug mode if Vite server isn't running
                 css_files = []
                 try:
-                    manifest_path = os.path.join(
-                        current_app.root_path, vite_static, vite_client, vite_manifest
-                    )
+                    manifest_path = current_app.config.get("INERTIA_VITE_MANIFEST_PATH")
+                    if manifest_path is None:
+                        raise ValueError(
+                            "Manifest path is not set. Set INERTIA_VITE_MANIFEST_PATH in your config."
+                        )
                     with open(f"{manifest_path}", encoding="utf-8") as content:
                         manifest = json.load(content)
                         if entry_file in manifest and "css" in manifest[entry_file]:
@@ -263,7 +276,7 @@ class Inertia:
                     output += f"""
                     <link
                     rel="stylesheet"
-                    href="{url_for(vite_static, filename=f"{vite_client}/{css_file}")}">
+                    href="{url_for(current_app.config.get("INERTIA_STATIC_ENDPOINT", "static"), filename=f"{css_file}")}">
                     """
 
                 # Include JS

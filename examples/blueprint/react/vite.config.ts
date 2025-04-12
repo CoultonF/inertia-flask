@@ -7,6 +7,7 @@ export default defineConfig({
   build: {
     emptyOutDir: true,
     copyPublicDir: false,
+    manifest: 'manifest.json',
     rollupOptions: {
       input: '/src/main.tsx',
       output: {
