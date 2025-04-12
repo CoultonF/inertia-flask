@@ -165,6 +165,11 @@ class BaseInertiaResponseMixin:
         template_path = current_app.config.get(
             f"{str(blueprint).upper() + '_' if blueprint is not None else ''}INERTIA_TEMPLATE"
         )
+        if template_path is None:
+            template_path = current_app.config.get("INERTIA_TEMPLATE")
+            current_app.logger.warning(
+                f"Blueprint template not found for {blueprint}. Using global template."
+            )
         try:
             current_app.jinja_env.get_template(template_path)
         except TemplateNotFound:
@@ -172,6 +177,11 @@ class BaseInertiaResponseMixin:
             current_app.logger.warning(
                 f"Blueprint template not found: {template_path}. Using global template."
             )
+        except Exception as e:
+            current_app.logger.error(
+                f"Error loading template: {template_path}. Error: {e}"
+            )
+            raise
         return render_template(
             template_path,
             page=data,
