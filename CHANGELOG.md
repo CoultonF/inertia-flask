@@ -1,5 +1,18 @@
 # Semantic Versioning Changelog
 
+# [1.1.0](https://github.com/CoultonF/inertia-flask/compare/v1.0.1...v1.1.0) (2025-04-13)
+
+
+### Bug Fixes
+
+* runtime error for vite dev command ([2be4093](https://github.com/CoultonF/inertia-flask/commit/2be4093f9805a5df147d5818ae690d44d1e9f564))
+* template_path fallback and exception handling ([fdbaadb](https://github.com/CoultonF/inertia-flask/commit/fdbaadbe76406b16fb45d5da964075a95d45f4e6))
+
+
+### Features
+
+* Add vue-spa example with inertia ([e192a49](https://github.com/CoultonF/inertia-flask/commit/e192a49957d2d5b20f2a8dbff03ee4d6d892efea))
+
 ## [1.0.1](https://github.com/CoultonF/inertia-flask/compare/v1.0.0...v1.0.1) (2025-04-12)
 
 
