@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.1.1](https://github.com/CoultonF/inertia-flask/compare/v1.1.0...v1.1.1) (2025-04-14)
+
+
+### Bug Fixes
+
+* update manifest path open to use root_route ([d283079](https://github.com/CoultonF/inertia-flask/commit/d283079c75edc49c11eca0c33c8abc9f35b716b2))
+
 # [1.1.0](https://github.com/CoultonF/inertia-flask/compare/v1.0.1...v1.1.0) (2025-04-13)
 
 
