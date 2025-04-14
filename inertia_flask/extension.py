@@ -200,7 +200,9 @@ class Inertia:
                 )
 
             try:
-                with open(f"{manifest_path}", encoding="utf-8") as content:
+                with open(
+                    os.path.join(current_app.root_path, manifest_path), encoding="utf-8"
+                ) as content:
                     manifest = json.load(content)
                     if file_path in manifest:
                         url_path = manifest[file_path]["file"]
@@ -264,7 +266,10 @@ class Inertia:
                         raise ValueError(
                             "Manifest path is not set. Set INERTIA_VITE_MANIFEST_PATH in your config."
                         )
-                    with open(f"{manifest_path}", encoding="utf-8") as content:
+                    with open(
+                        os.path.join(current_app.root_path, manifest_path),
+                        encoding="utf-8",
+                    ) as content:
                         manifest = json.load(content)
                         if entry_file in manifest and "css" in manifest[entry_file]:
                             css_files = manifest[entry_file]["css"]
