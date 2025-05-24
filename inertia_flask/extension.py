@@ -171,13 +171,16 @@ class Inertia:
         vite_origin = current_app.config.get(
             "INERTIA_VITE_ORIGIN", "http://localhost:5173"
         )
+        internal_vite_origin = current_app.config.get(
+            "INERTIA_INTERNAL_VITE_ORIGIN", vite_origin
+        )
         is_debug = flask_debug is True
 
         # Detect if Vite dev server is running
         vite_dev_server_running = False
         if is_debug:
             try:
-                response = requests.get(f"{vite_origin}/@vite/client", timeout=0.1)
+                response = requests.get(f"{internal_vite_origin}/@vite/client", timeout=0.1)
                 vite_dev_server_running = response.status_code == 200
             except requests.Timeout:
                 vite_dev_server_running = False
