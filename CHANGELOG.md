@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.1.2](https://github.com/CoultonF/inertia-flask/compare/v1.1.1...v1.1.2) (2025-05-24)
+
+
+### Bug Fixes
+
+* seperated internal/external vite origins ([5cc7b17](https://github.com/CoultonF/inertia-flask/commit/5cc7b177dfcc7d473ec7d9be9bf0a4611e29b3f8))
+
 ## [1.1.1](https://github.com/CoultonF/inertia-flask/compare/v1.1.0...v1.1.1) (2025-04-14)
 
 
