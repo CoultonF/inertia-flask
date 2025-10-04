@@ -180,7 +180,14 @@ class Inertia:
         vite_dev_server_running = False
         if is_debug:
             try:
-                response = requests.get(f"{internal_vite_origin}/@vite/client", timeout=0.1)
+                # Respect REQUESTS_CA_BUNDLE environment variable for HTTPS verification
+                # This allows users to specify a custom CA bundle for self-signed certificates
+                ca_bundle = os.environ.get('REQUESTS_CA_BUNDLE', True)
+                response = requests.get(
+                    f"{internal_vite_origin}/@vite/client",
+                    timeout=0.1,
+                    verify=ca_bundle
+                )
                 vite_dev_server_running = response.status_code == 200
             except requests.Timeout:
                 vite_dev_server_running = False
