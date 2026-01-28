@@ -1,5 +1,12 @@
 # Semantic Versioning Changelog
 
+## [1.1.3](https://github.com/CoultonF/inertia-flask/compare/v1.1.2...v1.1.3) (2026-01-28)
+
+
+### Bug Fixes
+
+* replace Vite dev server timeout check with explicit INERTIA_VITE_DEV config ([91f1267](https://github.com/CoultonF/inertia-flask/commit/91f12678c0763843f5f726eeeff6fccbc4c2ee3e))
+
 ## [1.1.2](https://github.com/CoultonF/inertia-flask/compare/v1.1.1...v1.1.2) (2025-05-24)
 
 
