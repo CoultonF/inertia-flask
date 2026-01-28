@@ -4,7 +4,7 @@ import json
 import os
 from typing import Optional, Union
 
-import requests
+
 from flask import Blueprint, Flask, current_app, request, session, url_for
 from flask.app import App
 from flask.blueprints import BlueprintSetupState
@@ -171,19 +171,14 @@ class Inertia:
         vite_origin = current_app.config.get(
             "INERTIA_VITE_ORIGIN", "http://localhost:5173"
         )
-        internal_vite_origin = current_app.config.get(
-            "INERTIA_INTERNAL_VITE_ORIGIN", vite_origin
-        )
         is_debug = flask_debug is True
 
-        # Detect if Vite dev server is running
-        vite_dev_server_running = False
-        if is_debug:
-            try:
-                response = requests.get(f"{internal_vite_origin}/@vite/client", timeout=0.1)
-                vite_dev_server_running = response.status_code == 200
-            except requests.Timeout:
-                vite_dev_server_running = False
+        # INERTIA_VITE_DEV takes precedence; falls back to DEBUG
+        vite_dev_setting = current_app.config.get("INERTIA_VITE_DEV")
+        if vite_dev_setting is not None:
+            vite_dev_server_running = bool(vite_dev_setting)
+        else:
+            vite_dev_server_running = is_debug
 
         def dev_asset(file_path, _=None):
             return f"{vite_origin}/{file_path}"

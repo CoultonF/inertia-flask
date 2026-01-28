@@ -139,9 +139,9 @@ Use these settings to configure SSR support.
 
 Use these settings to configure Vite.
 
+- `INERTIA_VITE_DEV`: Explicitly control whether to use the Vite dev server (`True`) or build assets (`False`). When not set, falls back to Flask's `DEBUG` setting. (default: `None`)
 - `INERTIA_VITE_DIR`: Directory containing your Vite/frontend project (default: `"inertia"`)
 - `INERTIA_VITE_ORIGIN`: URL where Vite dev server runs (default: `"http://localhost:5173"`)
-- `INERTIA_INTERNAL_VITE_ORIGIN`: URL where Vite dev server runs relative to the flask app. This is useful when your exposed vite service and docker container have different locations or ports. (default: `"http://localhost:5173"`)
 - `INERTIA_ROOT`: Root element ID for mounting the Inertia app (default: `"app"`)
 
   #### Manifest Files

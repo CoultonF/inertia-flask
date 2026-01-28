@@ -15,6 +15,7 @@ class Settings:
     INERTIA_VITE_ORIGIN = "http://localhost:5173"
     INERTIA_VITE_MANIFEST_PATH = None
     INERTIA_VITE_SSR_MANIFEST_PATH = None
+    INERTIA_VITE_DEV = None
     INERTIA_VITE_DIR = "inertia"
 
 
